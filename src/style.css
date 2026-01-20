@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@plugin 'daisyui' {
+  themes: corporate --default;
+}
+
+@theme {
+  --color-bps-blue: #2d95c9;
+  --color-bps-green: #75b547;
+  --color-bps-orange: #e18939;
+}
