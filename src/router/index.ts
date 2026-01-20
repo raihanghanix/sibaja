@@ -1,7 +1,7 @@
 import {
   createRouter,
   createWebHistory,
-  RouteLocationNormalized,
+  type RouteLocationNormalized,
 } from "vue-router";
 
 import Beranda from "../views/Beranda.vue";
@@ -12,7 +12,7 @@ import DetailDokumen from "../views/DetailDokumen.vue";
 import TambahPengajuan from "../views/TambahPengajuan.vue";
 import Profil from "../views/Profil.vue";
 import { getCookies } from "../utils/cookies";
-import { IPengguna } from "../models/types";
+import type { IPengguna } from "../models/types";
 import MenuAdmin from "../views/MenuAdmin.vue";
 import TambahPengguna from "../views/TambahPengguna.vue";
 import DetailPengguna from "../views/DetailPengguna.vue";
@@ -21,7 +21,7 @@ import Dokumen from "../views/Dokumen.vue";
 
 const validateUser = (
   to?: RouteLocationNormalized,
-  from?: RouteLocationNormalized
+  from?: RouteLocationNormalized,
 ) => {
   const pengguna = getCookies<IPengguna>("sessionId");
   if (!pengguna) {

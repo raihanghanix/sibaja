@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { IPengajuan } from '../models/types';
+import type { IPengajuan } from '../models/types';
 import { Pengajuan } from '../models/Pengajuan';
 
 const pengajuanModel = Pengajuan.getInstance()

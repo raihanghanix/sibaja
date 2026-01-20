@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { IPengguna, TPeran } from '../models/types';
+import type { IPengguna, TPeran } from '../models/types';
 import { Pengguna } from '../models/Pengguna';
 
 const penggunaModel = Pengguna.getInstance()

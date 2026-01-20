@@ -50,7 +50,7 @@ async function getData() {
   try {
     isLoading.value = true
     const data = await penggunaModel.getById(id as string)
-    if (data.length) forms.value = data[0]
+    if (data.length) forms.value = data[0]!
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {

@@ -32,7 +32,7 @@ const isLoading = ref<boolean>(false)
 function handleChange(e: Event) {
   const target = e.target as HTMLInputElement
   if (target.files && target.files.length > 0) {
-    formFiles.value[target.name] = target.files[0]
+    formFiles.value[target.name] = target.files[0]!
   }
 }
 
@@ -99,7 +99,7 @@ onMounted(() => getData())
         <legend class="fieldset-legend">Nama Tim
           <Required />
         </legend>
-        <div v-for="tim, i in pengguna.tim" class="flex items-center gap-2 truncate">
+        <div v-for="tim in pengguna.tim" class="flex items-center gap-2 truncate">
           <input v-model="forms.tim" type="radio" class="radio" name="tim" :id="tim" :value="tim" required />
           <p class="truncate">{{ tim }} (Ketua: {{daftarKetuaTim?.find((i) => i.tim?.includes(tim))?.nama ?? '-'}})</p>
         </div>

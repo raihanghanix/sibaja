@@ -5,7 +5,7 @@ import Required from '../components/Required.vue';
 import { useRouter } from 'vue-router';
 import { Dokumen } from '../models/Dokumen';
 import { getCookies } from '../utils/cookies';
-import { IPengguna, TDokumen } from '../models/types';
+import type { IPengguna, TDokumen } from '../models/types';
 
 const router = useRouter()
 const dokumenModel = Dokumen.getInstance()
@@ -19,7 +19,7 @@ const isLoading = ref<boolean>(false)
 function handleChange(e: Event) {
   const target = e.target as HTMLInputElement
   if (target.files && target.files.length > 0) {
-    file.value = target.files[0]
+    file.value = target.files[0]!
   }
 }
 

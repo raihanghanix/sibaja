@@ -1,6 +1,6 @@
 import type { PostgrestSingleResponse } from "@supabase/supabase-js";
 import { supabase } from "../utils/supabase";
-import type { IDokumen, IKotakMasuk, IPengguna, TPeran } from "./types";
+import type { IKotakMasuk, IPengguna } from "./types";
 
 export class KotakMasuk implements IKotakMasuk {
   private static instance: KotakMasuk;

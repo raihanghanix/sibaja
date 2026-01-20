@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { IDokumen, TDokumen } from '../models/types';
+import type { IDokumen, TDokumen } from '../models/types';
 import { Dokumen } from '../models/Dokumen';
 
 const dokumenModel = Dokumen.getInstance()

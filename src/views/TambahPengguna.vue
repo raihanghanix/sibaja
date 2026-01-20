@@ -5,11 +5,9 @@ import Required from '../components/Required.vue';
 import { useRouter } from 'vue-router';
 import { Pengguna } from '../models/Pengguna';
 import { roles, teams, type IPengguna } from '../models/types';
-import { getCookies, removeCookies, setCookies } from '../utils/cookies';
 
 const router = useRouter()
 const penggunaModel = Pengguna.getInstance()
-const pengguna = getCookies<IPengguna>('sessionId')
 
 const forms = ref<IPengguna>({
   id: '',

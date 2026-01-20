@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue';
 import Navbar from '../components/Navbar.vue';
 import Required from '../components/Required.vue';
 import { useRouter } from 'vue-router';
-import { IDokumen } from '../models/types';
+import type { IDokumen } from '../models/types';
 import { Dokumen } from '../models/Dokumen';
 import { KotakMasuk } from '../models/KotakMasuk';
 
@@ -52,7 +52,7 @@ async function getData() {
   try {
     isLoading.value = true
     const data = await dokumenModel.getById(id as string)
-    if (data.length) forms.value = data[0]
+    if (data.length) forms.value = data[0]!
     else router.push('/menu-admin?filter=dokumen')
   }
   catch (err) {

@@ -120,14 +120,14 @@ export class Dokumen implements IDokumen {
       .eq("pengajuan", id)
       .eq("tipe", tipe)) as PostgrestSingleResponse<null>;
     if (deleteError) throw new Error(deleteError.message);
-    this.deleteFile(ids[0]);
+    this.deleteFile(ids[0]!);
   }
 
   public async insert(
     id: string,
     pengajuan: string,
     pengguna: string,
-    tipe: TDokumen
+    tipe: TDokumen,
   ) {
     const { error } = (await supabase.from("dokumen").insert({
       id,

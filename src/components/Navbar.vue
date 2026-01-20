@@ -3,7 +3,7 @@ import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { KotakMasuk } from '../models/KotakMasuk';
 import { getCookies } from '../utils/cookies';
-import { IPengguna } from '../models/types';
+import type { IPengguna } from '../models/types';
 
 const router = useRouter()
 const kotakMasukModel = KotakMasuk.getInstance()

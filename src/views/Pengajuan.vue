@@ -3,7 +3,7 @@ import { useRouter } from 'vue-router';
 import Navbar from '../components/Navbar.vue';
 import { onMounted, ref } from 'vue';
 import { Pengajuan } from '../models/Pengajuan';
-import { IPengguna, type IPengajuan } from '../models/types';
+import type { IPengguna, IPengajuan } from '../models/types';
 import { KotakMasuk } from '../models/KotakMasuk';
 import { Dokumen as Dok } from '../models/Dokumen';
 import Dokumen from '../components/Dokumen.vue';
@@ -26,9 +26,9 @@ async function getData() {
   try {
     isLoading.value = true
     const dataPengajuan = await pengajuanModel.getById(id as string)
-    const dataPengguna = await penggunaModel.getByTim([dataPengajuan[0].tim!])
+    const dataPengguna = await penggunaModel.getByTim([dataPengajuan[0]!.tim!])
     if (dataPengajuan.length && dataPengguna.length) {
-      pengajuan.value = dataPengajuan[0]
+      pengajuan.value = dataPengajuan[0]!
       daftarPengguna.value = dataPengguna
     } else {
       pengajuan.value = null

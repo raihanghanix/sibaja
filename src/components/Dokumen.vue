@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { IDokumen, IPengguna, TDokumen, TPeran } from '../models/types';
+import type { IDokumen, IPengguna, TDokumen, TPeran } from '../models/types';
 import { onMounted } from 'vue';
 import { Dokumen } from '../models/Dokumen';
 import { ref } from 'vue';
