@@ -25,7 +25,6 @@ const validateUser = (
 ) => {
   const pengguna = getCookies<IPengguna>("sessionId");
   if (!pengguna) {
-    console.log(from);
     return "/login";
   } else if (to?.fullPath === "/tambah-pengajuan" && pengguna.peran !== "PJ") {
     return "/";

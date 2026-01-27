@@ -257,7 +257,6 @@ onMounted(() => getData())
     </div>
     <div class="truncate divider divider-start">Detail Pengajuan</div>
     <div class="flex flex-col gap-2">
-      <p class="truncate"><i class="fa-solid fa-key"></i> {{ id }}</p>
       <p class="truncate"><i class="fa-solid fa-calendar"></i> Diajukan: {{ new Date(pengajuan?.created_at ??
         '').toLocaleDateString('id', {
           dateStyle:
@@ -277,6 +276,7 @@ onMounted(() => getData())
       </p>
       <p class="truncate"><i class="fa-solid fa-user"></i> {{daftarPengguna?.find((i) => i.peran === 'Ketua Tim')?.nama
       }} (Ketua Tim)</p>
+      <p class="truncate"><i class="fa-solid fa-user"></i> {{ pengajuan?.pbj?.nama }} (PBJ)</p>
       <p class="truncate"><i class="fa-solid fa-box"></i> Pesanan {{ pengajuan?.pesanan ? 'selesai' : 'diproses' }}</p>
     </div>
     <div v-if="pengguna.peran === 'Ketua Tim'" class="truncate divider divider-start">Validasi Pengajuan (Ketua Tim)

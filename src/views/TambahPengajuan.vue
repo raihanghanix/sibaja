@@ -19,13 +19,15 @@ const pengguna = getCookies<IPengguna>('sessionId')
 
 const forms = ref<IPengajuan>({
   nama: '',
-  tim: ''
+  tim: '',
 })
 const formFiles = ref<Record<string, File | null>>({
   kak: null,
   fp: null,
   spp: null
 })
+const daftarPbj = ref<IPengguna[]>([])
+const pbjPilihan = ref<string>('')
 const daftarKetuaTim = ref<IPengguna[] | null>(null)
 const isLoading = ref<boolean>(false)
 
@@ -39,13 +41,15 @@ function handleChange(e: Event) {
 async function getData() {
   try {
     isLoading.value = true
-    const data = await penggunaModel.getByPeran('Ketua Tim')
-    const filteredData = data.filter((i) => {
+    const dataKetuaTim = await penggunaModel.getByPeran('Ketua Tim')
+    const dataPBJ = await penggunaModel.getByPeran('PBJ')
+    const filteredData = dataKetuaTim.filter((i) => {
       for (let j of i.tim!) {
         if (pengguna.tim?.includes(j)) return true
       }
     })
     daftarKetuaTim.value = filteredData
+    daftarPbj.value = dataPBJ
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -61,7 +65,7 @@ async function tambahPengajuan() {
     const fpId = crypto.randomUUID()
     const sppId = crypto.randomUUID()
     const ketuaId = daftarKetuaTim.value?.find((i) => i.tim?.includes((forms.value.tim!)))?.id
-    await pengajuanModel.insert({ id: pengajuanId, ...forms.value })
+    await pengajuanModel.insert({ id: pengajuanId, ...forms.value }, pbjPilihan.value)
     await dokumenModel.insert(kakId, pengajuanId, pengguna.id!, 'kak')
     await dokumenModel.insert(fpId, pengajuanId, pengguna.id!, 'fp')
     await dokumenModel.insert(sppId, pengajuanId, pengguna.id!, 'spp')
@@ -102,6 +106,15 @@ onMounted(() => getData())
         <div v-for="tim in pengguna.tim" class="flex items-center gap-2 truncate">
           <input v-model="forms.tim" type="radio" class="radio" name="tim" :id="tim" :value="tim" required />
           <p class="truncate">{{ tim }} (Ketua: {{daftarKetuaTim?.find((i) => i.tim?.includes(tim))?.nama ?? '-'}})</p>
+        </div>
+      </fieldset>
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend">Pilih PBJ
+          <Required />
+        </legend>
+        <div v-for="pbj in daftarPbj" class="flex items-center gap-2 truncate">
+          <input v-model="pbjPilihan" type="radio" class="radio" name="pbj" :id="pbj.id" :value="pbj.id" required />
+          <p class="truncate">{{ pbj.nama }}</p>
         </div>
       </fieldset>
       <fieldset class="fieldset">

@@ -16,6 +16,7 @@ export interface IPengajuan {
   tim?: string;
   disetujui?: boolean;
   selesai?: string | null;
+  pbj?: IPengguna;
 }
 export interface IDokumen {
   id?: string;
@@ -60,20 +61,24 @@ export type TDokumen =
   | "sp";
 
 export const teams = [
-  "Tim SPIP",
-  "Tim Jambi",
-  "Tim IPDS, Konsultansi Statistik, Pelayanan Publik, Penyusunan DDA",
-  "Tim Statistik Produksi",
-  "Tim Penilai Kinerja",
   "Tim NWAS",
   "Tim Statistik Distribusi",
   "Tim Statistik Sosial",
   "Tim Umum",
   "Tim MR dan QG",
+  "Tim Jambi",
+  "Tim Penilai Kinerja",
   "Tim Kerja Reformasi Birokrasi",
   "Tim Rekomendasi Statistik, Metadata, EPSS",
   "Tim Pojok Statistik",
+  "Tim SPIP",
+  "Tim IPDS, Konsultansi Statistik, Pelayanan Publik, Penyusunan DDA",
+  "Tim Statistik Produksi",
   "Tim Desa Cantik",
+  "Tim Pengadaan Barang dan Jasa",
+  "Tim Pejabat Pembuat Keputusan",
+  "Tim Bendahara",
+  "Tim Keuangan",
 ];
 
 export const roles: TPeran[] = [
