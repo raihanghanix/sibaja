@@ -9,6 +9,7 @@ import { Dokumen as Dok } from '../models/Dokumen';
 import Dokumen from '../components/Dokumen.vue';
 import { getCookies } from '../utils/cookies';
 import { Pengguna } from '../models/Pengguna';
+import Lampiran from '../components/Lampiran.vue';
 
 const router = useRouter()
 const penggunaModel = Pengguna.getInstance()
@@ -347,6 +348,15 @@ onMounted(() => getData())
       <!-- <Dokumen judul=" Surat Perintah Mulai Kerja" type='spmk'   /> -->
       <!-- <Dokumen judul=" Berita Acara Pemeriksaan Barang" type='bapp' /> -->
       <!-- <Dokumen judul=" Permohonan Pembayaran" type='pp' /> -->
+    </div>
+    <div class="truncate divider divider-start">Lampiran</div>
+    <div class="flex flex-col gap-2">
+      <Lampiran />
+    </div>
+    <div class="flex flex-col gap-2">
+      <RouterLink :to="`/pengajuan/${id}/lampiran`" class="w-full btn btn-primary"><i class="fa-solid fa-plus"></i>
+        Tambah Lampiran
+      </RouterLink>
     </div>
   </main>
 </template>

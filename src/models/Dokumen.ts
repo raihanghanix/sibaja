@@ -128,12 +128,14 @@ export class Dokumen implements IDokumen {
     pengajuan: string,
     pengguna: string,
     tipe: TDokumen,
+    nama: string | null = null,
   ) {
     const { error } = (await supabase.from("dokumen").insert({
       id,
       pengajuan,
       pengguna,
       tipe,
+      nama,
     })) as PostgrestSingleResponse<null>;
     if (error) throw new Error(error.message);
   }

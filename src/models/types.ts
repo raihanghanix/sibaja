@@ -58,7 +58,8 @@ export type TDokumen =
   | "pp"
   | "spm"
   | "kui"
-  | "sp";
+  | "sp"
+  | "lampiran";
 
 export const teams = [
   "Tim NWAS",

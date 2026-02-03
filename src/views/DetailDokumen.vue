@@ -13,6 +13,7 @@ const id = router.currentRoute.value.params.id
 const tipe = router.currentRoute.value.params.tipe
 const pengguna = getCookies<IPengguna>('sessionId')
 
+const namaLampiran = ref<string>('')
 const file = ref<File | null>(null)
 const isLoading = ref<boolean>(false)
 
@@ -30,7 +31,11 @@ async function uploadDokumen() {
     isLoading.value = true
     const dokumenId = crypto.randomUUID()
     await dokumenModel.deleteByPengajuan(id as string, tipe as string)
-    await dokumenModel.insert(dokumenId, id as string, pengguna.id!, tipe as TDokumen)
+    if (tipe === 'lampiran') {
+      await dokumenModel.insert(dokumenId, id as string, pengguna.id!, tipe as TDokumen, namaLampiran.value)
+    } else {
+      await dokumenModel.insert(dokumenId, id as string, pengguna.id!, tipe as TDokumen, null)
+    }
     await dokumenModel.upload(dokumenId, file.value!)
     router.push(`/pengajuan/${id}`)
   } catch (err) {
@@ -64,6 +69,13 @@ async function hapusDokumen() {
       <RouterLink :to="`/pengajuan/${id}`" class="btn btn-link">&lt; Kembali</RouterLink>
     </div>
     <form @submit.prevent="uploadDokumen" class="flex flex-col gap-2" id="form">
+      <fieldset v-if="tipe === 'lampiran'" class="fieldset">
+        <legend class="fieldset-legend">Nama Lampiran
+          <Required />
+        </legend>
+        <input v-model="namaLampiran" type="text" class="w-full input" placeholder="Nama lampiran..."
+          name="namaLampiran" required />
+      </fieldset>
       <fieldset class="fieldset">
         <legend class="fieldset-legend">File
           <Required />
