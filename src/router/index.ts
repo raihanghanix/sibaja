@@ -23,7 +23,6 @@ const validateUser = (
   to?: RouteLocationNormalized,
   from?: RouteLocationNormalized,
 ) => {
-  console.log(from);
   const pengguna = getCookies<IPengguna>("sessionId");
   if (!pengguna) {
     return "/login";
