@@ -24,6 +24,7 @@ const validateUser = (
   from?: RouteLocationNormalized,
 ) => {
   const pengguna = getCookies<IPengguna>("sessionId");
+  console.log(from);
   if (!pengguna) {
     return "/login";
   } else if (to?.fullPath === "/tambah-pengajuan" && pengguna.peran !== "PJ") {
