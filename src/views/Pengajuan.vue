@@ -9,7 +9,6 @@ import { Dokumen as Dok } from '../models/Dokumen';
 import Dokumen from '../components/Dokumen.vue';
 import { getCookies } from '../utils/cookies';
 import { Pengguna } from '../models/Pengguna';
-import Lampiran from '../components/Lampiran.vue';
 
 const router = useRouter()
 const penggunaModel = Pengguna.getInstance()
