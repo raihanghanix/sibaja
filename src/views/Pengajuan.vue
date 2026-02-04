@@ -349,7 +349,7 @@ onMounted(() => getData())
       <!-- <Dokumen judul=" Berita Acara Pemeriksaan Barang" type='bapp' /> -->
       <!-- <Dokumen judul=" Permohonan Pembayaran" type='pp' /> -->
     </div>
-    <div class="truncate divider divider-start">Lampiran</div>
+    <!-- <div class="truncate divider divider-start">Lampiran</div>
     <div class="flex flex-col gap-2">
       <Lampiran />
     </div>
@@ -357,6 +357,6 @@ onMounted(() => getData())
       <RouterLink :to="`/pengajuan/${id}/lampiran`" class="w-full btn btn-primary"><i class="fa-solid fa-plus"></i>
         Tambah Lampiran
       </RouterLink>
-    </div>
+    </div> -->
   </main>
 </template>
