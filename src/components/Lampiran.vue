@@ -1,62 +1,54 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import type { IDokumen, IPengguna } from '../models/types';
-import { getCookies } from '../utils/cookies';
 import { useRouter } from 'vue-router';
-import { Dokumen } from '../models/Dokumen';
+import { getCookies } from '../utils/cookies';
+import type { IDokumen, IPengguna, TDokumen } from '../models/types';
+
+const props = defineProps<{ data: IDokumen[] | null, tipe: TDokumen }>()
 
 const router = useRouter()
-const dokumenModel = Dokumen.getInstance()
-const id = router.currentRoute.value.params.id
-const pengguna = getCookies<IPengguna>('sessionId')
+const currRoute = router.currentRoute
+const currUser = getCookies<IPengguna>('sessionId')
 
-const daftarLampiran = ref<IDokumen[] | null>(null)
-const isLoading = ref<boolean>(false)
-
-async function getData() {
-  try {
-    isLoading.value = true
-    const data = await dokumenModel.getByPengajuan(id as string)
-    if (data.length) daftarLampiran.value = data.filter((i) => i.tipe === 'lampiran')!
-    else daftarLampiran.value = null
-  } catch (err) {
-    if (err instanceof Error) alert(err.message)
-  } finally {
-    isLoading.value = false
-  }
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString('id', { dateStyle: 'full' })
 }
 
-onMounted(() => getData())
+function formatTime(time: string) {
+  return new Date(time).toLocaleTimeString('id', { timeStyle: 'short' })
+}
 </script>
 
 <template>
-  <div v-if="daftarLampiran?.length" class="flex flex-col gap-2">
-    <div v-for="lampiran in daftarLampiran" class="w-full shadow-sm card bg-base-100">
-      <div class="card-body">
-        <h2 class="text-base card-title">{{ lampiran.nama }}</h2>
-        <p class="truncate"><i class="fa-solid fa-file"></i> {{ lampiran?.id ? `${lampiran.id}.pdf` : '-' }}</p>
-        <p v-if="!lampiran?.created_at" class="truncate"><i class="fa-solid fa-calendar"></i> -</p>
-        <p v-else class="truncate"><i class="fa-solid fa-calendar"></i> {{ new Date(lampiran?.created_at ??
-          '').toLocaleDateString('id', {
-            dateStyle:
-              'full'
-          }) }}
-          ({{ new Date(lampiran?.created_at ??
-            '').toLocaleTimeString('id', { timeStyle: 'short' }) }})</p>
-        <p class="truncate"><i class="fa-solid fa-user"></i> {{ lampiran?.pengguna?.nama ?? '-' }} ({{
-          lampiran?.pengguna?.peran ?? '-' }})</p>
-        <div class="justify-end card-actions">
-          <RouterLink v-if="pengguna.id === lampiran.pengguna?.id" :to="`/pengajuan/${id}/lampiran`"
-            class="btn btn-primary btn-square"><i class="fa-solid fa-pencil"></i>
-          </RouterLink>
-          <a :href="`https://jzybgguiugsdfdgfyczr.supabase.co/storage/v1/object/public/dokumen/${lampiran.id}`"
-            target="_blank" class="btn btn-primary btn-square"><i class="fa-solid fa-download"></i>
-          </a>
-        </div>
+  <div v-if="props.data?.length" v-for="i in props.data" class="w-full shadow-sm card bg-base-100">
+    <div class="card-body">
+      <div class="flex justify-between gap-1 truncate">
+        <h2 class="text-base truncate card-title">{{ i.nama }}</h2>
+      </div>
+      <div class="flex flex-col gap-1 text-sm truncate">
+        <p><i class="truncate fa-solid fa-key"></i> {{ i.id ? `${i.id}.pdf` : '-' }}</p>
+        <p>
+          <i class="truncate fa-solid fa-calendar"></i> Diajukan: {{
+            i.created_at ? `${formatDate(i.created_at)} (${formatTime(i.created_at)})` : '-'
+          }}
+        </p>
+        <p>
+          <i class="truncate fa-solid fa-user"></i> {{ i.pengguna?.nama ?? '-' }} ({{
+            i.pengguna?.peran ?? '-' }})
+        </p>
+      </div>
+      <div class="justify-end card-actions">
+        <RouterLink v-if="currUser.id === i.pengguna?.id"
+          :to="`/tambah-lampiran?id=${currRoute.query.id}&idLampiran=${i.id}`" class="btn btn-square btn-primary">
+          <i class="fa-solid fa-pencil"></i>
+        </RouterLink>
+        <a :href="`https://jzybgguiugsdfdgfyczr.supabase.co/storage/v1/object/public/dokumen/${i.id}`" target="_blank"
+          class="btn btn-square btn-primary">
+          <i class="fa-solid fa-download"></i>
+        </a>
       </div>
     </div>
   </div>
   <div v-else class="flex flex-col gap-2">
-    <p class="text-center">{{ isLoading ? 'Loading...' : 'Tidak ada lampiran' }}</p>
+    <p class="text-center">Tidak ada lampiran</p>
   </div>
 </template>

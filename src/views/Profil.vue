@@ -1,32 +1,37 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import Navbar from '../components/Navbar.vue';
-import Required from '../components/Required.vue';
 import { useRouter } from 'vue-router';
+import { ref } from 'vue';
+import { getCookies, removeCookies, setCookies } from '../utils/cookies';
 import { Pengguna } from '../models/Pengguna';
 import { roles, teams, type IPengguna } from '../models/types';
-import { getCookies, removeCookies, setCookies } from '../utils/cookies';
+import Navbar from '../components/Navbar.vue';
+import Required from '../components/Required.vue';
 
 const router = useRouter()
+const currUser = getCookies<IPengguna>('sessionId')
 const penggunaModel = Pengguna.getInstance()
-const pengguna = getCookies<IPengguna>('sessionId')
 
 const forms = ref<IPengguna>({
-  id: pengguna.id,
-  nama: pengguna.nama,
-  email: pengguna.email,
-  password: pengguna.password,
-  peran: pengguna.peran,
-  tim: pengguna.tim
+  id: currUser.id,
+  nama: currUser.nama,
+  email: currUser.email,
+  password: currUser.password,
+  peran: currUser.peran,
+  tim: currUser.tim
 })
 const isLoading = ref<boolean>(false)
+
+function logout() {
+  removeCookies('sessionId')
+  router.push('/login')
+}
 
 async function ubahProfil() {
   try {
     isLoading.value = true
-    await penggunaModel.updateById(pengguna.id!, forms.value)
+    await penggunaModel.updateById(currUser.id!, forms.value)
     setCookies<IPengguna>('sessionId', forms.value)
-    router.push('/')
+    router.go(-1)
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -39,26 +44,25 @@ async function hapusAkun() {
   if (!conf) return
   try {
     isLoading.value = true
-    await penggunaModel.deleteById(pengguna.id!)
+    await penggunaModel.deleteById(currUser.id!)
     removeCookies('sessionId')
-    router.push('/login')
+    router.go(-1)
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
     isLoading.value = false
   }
 }
-
-function logout() {
-  removeCookies('sessionId')
-  router.push('/login')
-}
 </script>
 
 <template>
   <Navbar />
-  <main class="flex flex-col w-full max-w-5xl gap-4 p-8 mx-auto">
-    <p class="text-xl font-semibold">Profil</p>
+  <div class="flex flex-col gap-4 p-8">
+
+    <div class="flex flex-col gap-2">
+      <p class="text-lg font-semibold">Profil</p>
+    </div>
+
     <form @submit.prevent="ubahProfil" class="flex flex-col gap-2" id="form">
       <fieldset class="fieldset">
         <legend class="fieldset-legend">NIP
@@ -105,13 +109,18 @@ function logout() {
         </div>
       </fieldset>
     </form>
+
     <div class="flex flex-col gap-2">
-      <button type="submit" class="w-full btn btn-primary" form="form" :disabled="isLoading"><i
-          class="fa-solid fa-floppy-disk"></i> Simpan Perubahan</button>
-      <button @click="hapusAkun" class="w-full btn btn-error" :disabled="isLoading"><i class="fa-solid fa-trash"></i>
-        Hapus Akun</button>
-      <button @click="logout" class="w-full btn" :disabled="isLoading"><i class="fa-solid fa-right-from-bracket"></i>
-        Keluar</button>
+      <button type="submit" class="w-full btn btn-primary" form="form" :disabled="isLoading">
+        <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
+      </button>
+      <button @click="hapusAkun" class="w-full btn btn-error" :disabled="isLoading">
+        <i class="fa-solid fa-trash"></i> Hapus Akun
+      </button>
+      <button @click="logout" class="w-full btn" :disabled="isLoading">
+        <i class="fa-solid fa-right-from-bracket"></i> Keluar
+      </button>
     </div>
-  </main>
+
+  </div>
 </template>

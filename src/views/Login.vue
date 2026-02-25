@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import Required from '../components/Required.vue';
-import { Pengguna } from '../models/Pengguna';
 import { ref } from 'vue';
-import { type IPengguna } from '../models/types';
 import { setCookies } from '../utils/cookies';
+import { Pengguna } from '../models/Pengguna';
+import { type IPengguna } from '../models/types';
+import Required from '../components/Required.vue';
 
 const router = useRouter()
+
 const penggunaModel = Pengguna.getInstance()
 
 const forms = ref<IPengguna>({
@@ -18,7 +19,7 @@ const isLoading = ref<boolean>(false)
 async function login() {
   try {
     isLoading.value = true
-    const data = await penggunaModel.getAll()
+    const data = await penggunaModel.getAll('desc')
     const filteredData = data.find((i) => i.email === forms.value.email && i.password === forms.value.password)
     if (filteredData) {
       setCookies<IPengguna>('sessionId', filteredData)
@@ -37,7 +38,8 @@ async function login() {
 
 <template>
   <main class="flex items-center justify-center min-h-screen p-8">
-    <div class="shadow-sm w-72 card bg-base-100">
+
+    <div class="w-72 card card-border bg-base-100">
       <div class="card-body">
         <p class="gap-0 card-title">
           <span class="text-bps-blue">SI</span>
@@ -63,11 +65,13 @@ async function login() {
             </fieldset>
           </div>
           <div class="flex flex-col w-full gap-2">
-            <button type="submit" class="w-full btn btn-primary" form="form" :disabled="isLoading"><i
-                class="fa-solid fa-right-from-bracket"></i> Masuk</button>
+            <button type="submit" class="w-full btn btn-primary" form="form" :disabled="isLoading">
+              <i class="fa-solid fa-right-from-bracket"></i> Masuk
+            </button>
           </div>
         </form>
       </div>
     </div>
+
   </main>
 </template>

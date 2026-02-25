@@ -35,10 +35,13 @@ export class Pengguna implements IPengguna {
     this.tim = val.tim;
   }
 
-  public async getAll() {
+  public async getAll(sort: string) {
     const { data, error } = (await supabase
       .from("pengguna")
-      .select("*")) as PostgrestSingleResponse<IPengguna[]>;
+      .select("*")
+      .order("nama", {
+        ascending: sort === "asc" ? true : false,
+      })) as PostgrestSingleResponse<IPengguna[]>;
     if (error) throw new Error(error.message);
     return data;
   }
@@ -79,11 +82,14 @@ export class Pengguna implements IPengguna {
     return data;
   }
 
-  public async getByPeran(peran: TPeran) {
+  public async getByPeran(peran: TPeran, sort: string) {
     const { data, error } = (await supabase
       .from("pengguna")
       .select("*")
-      .eq("peran", peran)) as PostgrestSingleResponse<IPengguna[]>;
+      .eq("peran", peran)
+      .order("nama", {
+        ascending: sort === "asc" ? true : false,
+      })) as PostgrestSingleResponse<IPengguna[]>;
     if (error) throw new Error(error.message);
     return data;
   }

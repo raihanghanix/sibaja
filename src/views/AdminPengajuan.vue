@@ -38,26 +38,22 @@ function reset() {
 function handleFilter(e: Event) {
   const target = e.target as HTMLInputElement
   filter.value = target.value
-  router.push(`/?filter=${filter.value}&sort=${sort.value}`)
+  router.push(`/admin-pengajuan?filter=${filter.value}&sort=${sort.value}`)
 }
 
 function handleSort(e: Event) {
   const target = e.target as HTMLInputElement
   sort.value = target.value
-  router.push(`/?filter=${filter.value}&sort=${sort.value}`)
+  router.push(`/admin-pengajuan?filter=${filter.value}&sort=${sort.value}`)
 }
 
 async function getData() {
+  if (currUser.peran !== 'Admin') return router.go(-1)
   try {
     isLoading.value = true
     reset()
-    if (currUser.peran === 'PJ' || currUser.peran === 'Ketua Tim') {
-      const data = await pengajuanModel.getByTim(currUser.tim!, filter.value, sort.value)
-      daftarPengajuan.value = data
-    } else {
-      const data = await pengajuanModel.getAll(filter.value, sort.value)
-      daftarPengajuan.value = data
-    }
+    const data = await pengajuanModel.getAll(filter.value, sort.value)
+    daftarPengajuan.value = data
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -73,10 +69,30 @@ watch(currRoute, getData, { immediate: true })
   <div class="flex flex-col gap-4 p-8">
 
     <div class="flex flex-col gap-2">
-      <p class="text-lg font-semibold">Daftar Pengajuan</p>
+      <p class="text-lg font-semibold">Menu Admin</p>
     </div>
 
-    <div class="flex flex-col gap-2 ">
+    <div class="flex flex-col gap-2">
+      <div role="tablist" class="tabs tabs-box w-fit">
+        <RouterLink :to="`/admin-pengguna`" role="tab"
+          :class="`tab ${currRoute.path === '/admin-pengguna' && 'tab-active'}`">
+          Pengguna
+        </RouterLink>
+        <RouterLink :to="`/admin-pengajuan`" role="tab"
+          :class="`tab ${currRoute.path === '/admin-pengajuan' && 'tab-active'}`">
+          Pengajuan
+        </RouterLink>
+        <RouterLink :to="`/admin-dokumen`" role="tab"
+          :class="`tab ${currRoute.path === '/admin-dokumen' && 'tab-active'}`">
+          Dokumen
+        </RouterLink>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="flex flex-col gap-2">
+      <p class="font-semibold">Daftar Pengajuan</p>
       <p class="text-sm">{{ formatTim() }}</p>
     </div>
 
@@ -109,14 +125,8 @@ watch(currRoute, getData, { immediate: true })
       </fieldset>
     </div>
 
-    <div v-if="currUser.peran === 'PJ'" class="flex flex-col gap-2">
-      <RouterLink to="/tambah-pengajuan" class="btn btn-soft btn-primary">
-        <i class="fa-solid fa-plus"></i> Pengajuan Baru
-      </RouterLink>
-    </div>
-
-    <div v-if="daftarPengajuan.length" class="flex flex-col gap-2">
-      <div v-for="i in daftarPengajuan" class="w-full card card-border bg-base-100">
+    <div v-if="daftarPengajuan.length" IPengajuan="flex flex-col gap-2">
+      <div v-for="i in daftarPengajuan" class="IPengajuan-full card card-border bg-base-100">
         <div class="card-body">
           <div class="flex justify-between gap-1 truncate">
             <h2 class="text-base truncate card-title">{{ i.nama }}</h2>
@@ -139,8 +149,8 @@ watch(currRoute, getData, { immediate: true })
             <p><i class="truncate fa-solid fa-box"></i> Pesanan {{ i.pesanan ? 'selesai' : 'diproses' }}</p>
           </div>
           <div class="justify-end card-actions">
-            <RouterLink :to="`/pengajuan?id=${i.id}`" class="btn btn-square btn-primary">
-              <i class="fa-solid fa-info"></i>
+            <RouterLink :to="`/admin-edit-pengajuan?id=${i.id}`" class="btn btn-square btn-primary">
+              <i class="fa-solid fa-pencil"></i>
             </RouterLink>
           </div>
         </div>

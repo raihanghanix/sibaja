@@ -12,6 +12,7 @@ export class Dokumen implements IDokumen {
   pengguna?: IPengguna = {};
   status?: string = "";
   tipe?: TDokumen = "kak";
+  selesai?: string | null = "";
 
   public get(): IDokumen {
     return {
@@ -22,6 +23,7 @@ export class Dokumen implements IDokumen {
       pengguna: this.pengguna,
       status: this.status,
       tipe: this.tipe,
+      selesai: this.selesai,
     };
   }
 
@@ -33,6 +35,7 @@ export class Dokumen implements IDokumen {
     this.pengguna = val.pengguna;
     this.status = val.status;
     this.tipe = val.tipe;
+    this.selesai = val.selesai;
   }
 
   public async getAll() {
@@ -58,7 +61,10 @@ export class Dokumen implements IDokumen {
     const { data, error } = (await supabase
       .from("dokumen")
       .select("*, pengajuan (*), pengguna (*)")
-      .eq("pengajuan", pengajuan)) as PostgrestSingleResponse<IDokumen[]>;
+      .eq("pengajuan", pengajuan)
+      .order("created_at", { ascending: true })) as PostgrestSingleResponse<
+      IDokumen[]
+    >;
     if (error) throw new Error(error.message);
     return data;
   }
@@ -72,11 +78,14 @@ export class Dokumen implements IDokumen {
     return data;
   }
 
-  public async getByStatus(status: "Diproses" | "Valid" | "Tidak valid") {
+  public async getByStatus(status: string, sort: string) {
     const { data, error } = (await supabase
       .from("dokumen")
       .select("*, pengajuan (*), pengguna (*)")
-      .eq("status", status)) as PostgrestSingleResponse<IDokumen[]>;
+      .eq("status", status)
+      .order("created_at", {
+        ascending: sort === "asc" ? true : false,
+      })) as PostgrestSingleResponse<IDokumen[]>;
     if (error) throw new Error(error.message);
     return data;
   }

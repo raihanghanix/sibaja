@@ -41,14 +41,14 @@ export class Pengajuan implements IPengajuan {
     this.pbj = val.pbj;
   }
 
-  public async getAll() {
+  public async getAll(filter: string, sort: string) {
     const { data, error } = (await supabase
       .from("pengajuan")
       .select("*, pbj (*)")
-      .order("status", { ascending: true })
-      .order("created_at", { ascending: false })) as PostgrestSingleResponse<
-      IPengajuan[]
-    >;
+      .eq("status", filter)
+      .order("created_at", {
+        ascending: sort === "asc" ? true : false,
+      })) as PostgrestSingleResponse<IPengajuan[]>;
     if (error) throw new Error(error.message);
     return data;
   }
@@ -89,15 +89,15 @@ export class Pengajuan implements IPengajuan {
     return data;
   }
 
-  public async getByTim(tim: string[]) {
+  public async getByTim(tim: string[], filter: string, sort: string) {
     const { data, error } = (await supabase
       .from("pengajuan")
       .select("*, pbj (*)")
       .ilikeAnyOf("tim", tim)
-      .order("status", { ascending: true })
-      .order("created_at", { ascending: false })) as PostgrestSingleResponse<
-      IPengajuan[]
-    >;
+      .eq("status", filter)
+      .order("created_at", {
+        ascending: sort === "asc" ? true : false,
+      })) as PostgrestSingleResponse<IPengajuan[]>;
     if (error) throw new Error(error.message);
     return data;
   }

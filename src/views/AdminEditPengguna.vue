@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import Navbar from '../components/Navbar.vue';
-import Required from '../components/Required.vue';
 import { useRouter } from 'vue-router';
+import { onMounted, ref } from 'vue';
+import { getCookies } from '../utils/cookies';
 import { Pengguna } from '../models/Pengguna';
 import { roles, teams, type IPengguna } from '../models/types';
+import Navbar from '../components/Navbar.vue';
+import Required from '../components/Required.vue';
 
 const router = useRouter()
+const currRoute = router.currentRoute
+const currUser = getCookies<IPengguna>('sessionId')
 const penggunaModel = Pengguna.getInstance()
-const id = router.currentRoute.value.params.id
 
 const forms = ref<IPengguna>({
   id: '',
@@ -23,8 +25,8 @@ const isLoading = ref<boolean>(false)
 async function ubahProfil() {
   try {
     isLoading.value = true
-    await penggunaModel.updateById(id as string, forms.value)
-    router.push('/menu-admin')
+    await penggunaModel.updateById(currRoute.value.query.id as string, forms.value)
+    router.push('/admin-pengguna')
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -37,8 +39,8 @@ async function hapusAkun() {
   if (!conf) return
   try {
     isLoading.value = true
-    await penggunaModel.deleteById(id as string)
-    router.push('/menu-admin')
+    await penggunaModel.deleteById(currRoute.value.query.id as string)
+    router.push('/admin-pengguna')
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -47,51 +49,68 @@ async function hapusAkun() {
 }
 
 async function getData() {
+  if (!currRoute.value.query.id) {
+    alert('Id tidak ditemukan!')
+    return router.replace('/')
+  }
   try {
     isLoading.value = true
-    const data = await penggunaModel.getById(id as string)
+    const data = await penggunaModel.getById(currRoute.value.query.id as string)
     if (data.length) forms.value = data[0]!
   } catch (err) {
-    if (err instanceof Error) alert(err.message)
+    if (err instanceof Error) {
+      alert(err.message)
+      router.replace('/')
+    }
   } finally {
     isLoading.value = false
   }
 }
 
-onMounted(() => getData())
+onMounted(() => {
+  if (currUser.peran !== 'Admin') return router.go(-1)
+  getData()
+})
 </script>
 
 <template>
   <Navbar />
-  <main class="flex flex-col w-full max-w-5xl gap-4 p-8 mx-auto">
-    <div class="flex items-center justify-between">
-      <p class="text-xl font-semibold">Edit Pengguna</p>
-      <RouterLink to="/menu-admin" class="btn btn-link">&lt; Kembali</RouterLink>
+  <div class="flex flex-col gap-4 p-8">
+
+    <div class="flex flex-col gap-2">
+      <div class="flex justify-between gap-1">
+        <p class="text-lg font-semibold">Edit Pengguna</p>
+        <button @click="() => router.go(-1)" class="underline cursor-pointer text-primary">
+          &lt; Kembali
+        </button>
+      </div>
     </div>
+
     <form @submit.prevent="ubahProfil" class="flex flex-col gap-2" id="form">
       <fieldset class="fieldset">
         <legend class="fieldset-legend">NIP
           <Required />
         </legend>
-        <input v-model="forms.id" type="text" class="w-full input" placeholder="NIP..." name="nip" required />
+        <input v-model="forms.id" type="text" class="w-full input" placeholder="NIP Anda..." name="nip" required />
       </fieldset>
       <fieldset class="fieldset">
         <legend class="fieldset-legend">Nama
           <Required />
         </legend>
-        <input v-model="forms.nama" type="text" class="w-full input" placeholder="Nama..." name="nama" required />
+        <input v-model="forms.nama" type="text" class="w-full input" placeholder="Nama Anda..." name="nama" required />
       </fieldset>
       <fieldset class="fieldset">
         <legend class="fieldset-legend">Email
           <Required />
         </legend>
-        <input v-model="forms.email" type="email" class="w-full input" placeholder="Email..." name="email" required />
+        <input v-model="forms.email" type="email" class="w-full input" placeholder="Email Anda..." name="email"
+          required />
       </fieldset>
       <fieldset class="fieldset">
         <legend class="fieldset-legend">Password
           <Required />
         </legend>
-        <input v-model="forms.password" type="text" class="w-full input" placeholder="Password..." name="password"
+        <input v-model="forms.password" type="text" class="w-full input" placeholder="Password Anda..." name="password"
           required />
       </fieldset>
       <fieldset class="fieldset">
@@ -113,11 +132,15 @@ onMounted(() => getData())
         </div>
       </fieldset>
     </form>
+
     <div class="flex flex-col gap-2">
-      <button type="submit" class="w-full btn btn-primary" form="form" :disabled="isLoading"><i
-          class="fa-solid fa-floppy-disk"></i> Simpan Perubahan</button>
-      <button @click="hapusAkun" class="w-full btn btn-error" :disabled="isLoading"><i class="fa-solid fa-trash"></i>
-        Hapus Akun</button>
+      <button type="submit" class="w-full btn btn-primary" form="form" :disabled="isLoading">
+        <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
+      </button>
+      <button @click="hapusAkun" class="w-full btn btn-error" :disabled="isLoading">
+        <i class="fa-solid fa-trash"></i> Hapus Akun
+      </button>
     </div>
-  </main>
+
+  </div>
 </template>

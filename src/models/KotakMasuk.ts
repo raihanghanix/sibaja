@@ -1,6 +1,6 @@
 import type { PostgrestSingleResponse } from "@supabase/supabase-js";
 import { supabase } from "../utils/supabase";
-import type { IKotakMasuk, IPengguna } from "./types";
+import type { IKotakMasuk, IPengajuan, IPengguna } from "./types";
 
 export class KotakMasuk implements IKotakMasuk {
   private static instance: KotakMasuk;
@@ -8,16 +8,18 @@ export class KotakMasuk implements IKotakMasuk {
   id?: string = "";
   created_at?: string = "";
   pengguna?: IPengguna = {};
+  pengajuan?: IPengajuan = {};
   pesan?: string = "";
-  dibaca?: boolean = false;
+  khusus?: boolean = false;
 
   public get(): IKotakMasuk {
     return {
       id: this.id,
       created_at: this.created_at,
       pengguna: this.pengguna,
+      pengajuan: this.pengajuan,
       pesan: this.pesan,
-      dibaca: this.dibaca,
+      khusus: this.khusus,
     };
   }
 
@@ -25,14 +27,19 @@ export class KotakMasuk implements IKotakMasuk {
     this.id = val.id;
     this.created_at = val.created_at;
     this.pengguna = val.pengguna;
+    this.pengajuan = val.pengajuan;
     this.pesan = val.pesan;
-    this.dibaca = val.dibaca;
+    this.khusus = val.khusus;
   }
 
-  public async getAll() {
+  public async getAll(sort: string, khusus: boolean) {
     const { data, error } = (await supabase
       .from("kotak_masuk")
-      .select("*, pengguna (*)")) as PostgrestSingleResponse<IKotakMasuk[]>;
+      .select("*, pengguna (*)")
+      .eq("khusus", khusus)
+      .order("created_at", {
+        ascending: sort === "asc" ? true : false,
+      })) as PostgrestSingleResponse<IKotakMasuk[]>;
     if (error) throw new Error(error.message);
     return data;
   }
@@ -113,11 +120,18 @@ export class KotakMasuk implements IKotakMasuk {
     else return true;
   }
 
-  public async insert(pengguna: string, pesan: string) {
+  public async insert(
+    pengguna: string,
+    pengajuan: string | null,
+    pesan: string,
+    khusus: boolean,
+  ) {
     const { error } = (await supabase.from("kotak_masuk").insert({
       id: crypto.randomUUID(),
       pengguna,
+      pengajuan,
       pesan,
+      khusus,
     })) as PostgrestSingleResponse<null>;
     if (error) throw new Error(error.message);
   }

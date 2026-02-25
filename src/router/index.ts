@@ -1,122 +1,120 @@
-import {
-  createRouter,
-  createWebHistory,
-  type RouteLocationNormalized,
-} from "vue-router";
-
-import Beranda from "../views/Beranda.vue";
-import Login from "../views/Login.vue";
-import KotakMasuk from "../views/KotakMasuk.vue";
-import Pengajuan from "../views/Pengajuan.vue";
-import DetailDokumen from "../views/DetailDokumen.vue";
-import TambahPengajuan from "../views/TambahPengajuan.vue";
-import Profil from "../views/Profil.vue";
+import { createRouter, createWebHistory } from "vue-router";
 import { getCookies } from "../utils/cookies";
 import type { IPengguna } from "../models/types";
-import MenuAdmin from "../views/MenuAdmin.vue";
-import TambahPengguna from "../views/TambahPengguna.vue";
-import DetailPengguna from "../views/DetailPengguna.vue";
-import DetailPengajuan from "../views/DetailPengajuan.vue";
-import Dokumen from "../views/Dokumen.vue";
+import Beranda from "../views/Beranda.vue";
+import PengajuanDetail from "../views/PengajuanDetail.vue";
+import PengajuanDokumen from "../views/PengajuanDokumen.vue";
+import PengajuanAktivitas from "../views/PengajuanAktivitas.vue";
+import TambahPengajuan from "../views/TambahPengajuan.vue";
+import TambahDokumen from "../views/TambahDokumen.vue";
+import TambahLampiran from "../views/TambahLampiran.vue";
+import AktivitasTim from "../views/AktivitasTim.vue";
+import AdminPengguna from "../views/AdminPengguna.vue";
+import AdminPengajuan from "../views/AdminPengajuan.vue";
+import AdminDokumen from "../views/AdminDokumen.vue";
+import AdminTambahPengguna from "../views/AdminTambahPengguna.vue";
+import AdminEditPengguna from "../views/AdminEditPengguna.vue";
+import AdminEditPengajuan from "../views/AdminEditPengajuan.vue";
+import AdminEditDokumen from "../views/AdminEditDokumen.vue";
+import Profil from "../views/Profil.vue";
+import Login from "../views/Login.vue";
 
-const validateUser = (
-  to?: RouteLocationNormalized,
-  from?: RouteLocationNormalized,
-) => {
-  const pengguna = getCookies<IPengguna>("sessionId");
-  console.log(from);
-  if (!pengguna) {
-    return "/login";
-  } else if (to?.fullPath === "/tambah-pengajuan" && pengguna.peran !== "PJ") {
-    return "/";
-  } else if (to?.fullPath === "/menu-admin" && pengguna.peran !== "Admin") {
-    return "/";
-  } else if (
-    to?.fullPath === "/menu-admin/tambah-pengguna" &&
-    pengguna.peran !== "Admin"
-  ) {
-    return "/";
-  } else if (
-    to?.fullPath === "/menu-admin/pengguna/:id" &&
-    pengguna.peran !== "Admin"
-  ) {
-    return "/";
-  } else if (
-    to?.fullPath === "/menu-admin/pengajuan/:id" &&
-    pengguna.peran !== "Admin"
-  ) {
-    return "/";
-  } else if (
-    to?.fullPath === "/menu-admin/dokumen/:id" &&
-    pengguna.peran !== "Admin"
-  ) {
-    return "/";
-  }
+const validateUser = () => {
+  const currUser = getCookies<IPengguna>("sessionId");
+  if (!currUser) return "/login";
 };
 
 const routes = [
-  { path: "/", component: Beranda, beforeEnter: () => validateUser() },
-
+  {
+    path: "/",
+    component: Beranda,
+    beforeEnter: () => validateUser(),
+  },
+  {
+    path: "/pengajuan",
+    component: PengajuanDetail,
+    beforeEnter: () => validateUser(),
+  },
+  {
+    path: "/dokumen",
+    component: PengajuanDokumen,
+    beforeEnter: () => validateUser(),
+  },
+  {
+    path: "/aktivitas-pengajuan",
+    component: PengajuanAktivitas,
+    beforeEnter: () => validateUser(),
+  },
+  {
+    path: "/tambah-dokumen",
+    component: TambahDokumen,
+    beforeEnter: () => validateUser(),
+  },
   {
     path: "/tambah-pengajuan",
     component: TambahPengajuan,
-    beforeEnter: (to: RouteLocationNormalized, from: RouteLocationNormalized) =>
-      validateUser(to, from),
-  },
-  {
-    path: "/pengajuan/:id",
-    component: Pengajuan,
     beforeEnter: () => validateUser(),
   },
   {
-    path: "/pengajuan/:id/:tipe",
-    component: DetailDokumen,
+    path: "/tambah-lampiran",
+    component: TambahLampiran,
     beforeEnter: () => validateUser(),
   },
   {
-    path: "/kotak-masuk",
-    component: KotakMasuk,
+    path: "/aktivitas",
+    component: AktivitasTim,
     beforeEnter: () => validateUser(),
   },
   {
-    path: "/menu-admin",
-    component: MenuAdmin,
-    beforeEnter: (to: RouteLocationNormalized, from: RouteLocationNormalized) =>
-      validateUser(to, from),
+    path: "/admin-pengguna",
+    component: AdminPengguna,
+    beforeEnter: () => validateUser(),
   },
   {
-    path: "/menu-admin/tambah-pengguna",
-    component: TambahPengguna,
-    beforeEnter: (to: RouteLocationNormalized, from: RouteLocationNormalized) =>
-      validateUser(to, from),
+    path: "/admin-pengajuan",
+    component: AdminPengajuan,
+    beforeEnter: () => validateUser(),
   },
   {
-    path: "/menu-admin/pengguna/:id",
-    component: DetailPengguna,
-    beforeEnter: (to: RouteLocationNormalized, from: RouteLocationNormalized) =>
-      validateUser(to, from),
+    path: "/admin-dokumen",
+    component: AdminDokumen,
+    beforeEnter: () => validateUser(),
   },
   {
-    path: "/menu-admin/pengajuan/:id",
-    component: DetailPengajuan,
-    beforeEnter: (to: RouteLocationNormalized, from: RouteLocationNormalized) =>
-      validateUser(to, from),
+    path: "/admin-tambah-pengguna",
+    component: AdminTambahPengguna,
+    beforeEnter: () => validateUser(),
   },
   {
-    path: "/menu-admin/dokumen/:id",
-    component: Dokumen,
-    beforeEnter: (to: RouteLocationNormalized, from: RouteLocationNormalized) =>
-      validateUser(to, from),
+    path: "/admin-edit-pengguna",
+    component: AdminEditPengguna,
+    beforeEnter: () => validateUser(),
+  },
+  {
+    path: "/admin-edit-pengajuan",
+    component: AdminEditPengajuan,
+    beforeEnter: () => validateUser(),
+  },
+  {
+    path: "/admin-edit-dokumen",
+    component: AdminEditDokumen,
+    beforeEnter: () => validateUser(),
   },
   {
     path: "/profil",
     component: Profil,
     beforeEnter: () => validateUser(),
   },
-  { path: "/login", component: Login, beforeEnter: () => {} },
+  {
+    path: "/login",
+    component: Login,
+  },
 ];
 
 export const router = createRouter({
   history: createWebHistory(),
+  scrollBehavior() {
+    return { top: 0 };
+  },
   routes,
 });

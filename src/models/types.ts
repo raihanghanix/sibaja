@@ -26,13 +26,15 @@ export interface IDokumen {
   pengguna?: IPengguna;
   status?: string;
   tipe?: TDokumen;
+  selesai?: string | null;
 }
 export interface IKotakMasuk {
   id?: string;
   created_at?: string;
   pengguna?: IPengguna;
+  pengajuan?: IPengajuan;
   pesan?: string;
-  dibaca?: boolean;
+  khusus?: boolean;
 }
 
 export type TPeran = "Ketua Tim" | "PJ" | "PPK" | "PBJ" | "Bendahara" | "Admin";
