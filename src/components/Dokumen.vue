@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import { getCookies } from '../utils/cookies';
 import { Dokumen } from '../models/Dokumen';
 import { KotakMasuk } from '../models/KotakMasuk';
