@@ -58,7 +58,7 @@ async function prosesPengajuan() {
     isLoading.value = true
     await pengajuanModel.updateById(currRoute.value.query.id as string, { status: 'Diproses', selesai: null })
     await kotakMasukModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) mengubah status pengajuan ini menjadi Diproses.`, true)
-    location.reload()
+    await getData()
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -73,7 +73,7 @@ async function selesaikanPengajuan() {
     isLoading.value = true
     await pengajuanModel.updateById(currRoute.value.query.id as string, { status: 'Selesai', selesai: new Date().toISOString() })
     await kotakMasukModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) mengubah status pengajuan ini menjadi Selesai.`, true)
-    location.reload()
+    await getData()
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -88,7 +88,7 @@ async function tolakPengajuan() {
     isLoading.value = true
     await pengajuanModel.updateById(currRoute.value.query.id as string, { status: 'Ditolak', selesai: null })
     await kotakMasukModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) mengubah status pengajuan ini menjadi Ditolak dengan alasan: "${alasan}".`, true)
-    location.reload()
+    await getData()
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -119,7 +119,7 @@ async function selesaikanPesanan() {
     isLoading.value = true
     await pengajuanModel.updateById(currRoute.value.query.id as string, { pesanan: true })
     await kotakMasukModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) mengubah status pesanan pada pengajuan ini menjadi Selesai.`, true)
-    location.reload()
+    await getData()
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -134,7 +134,7 @@ async function prosesPesanan() {
     isLoading.value = true
     await pengajuanModel.updateById(currRoute.value.query.id as string, { pesanan: false })
     await kotakMasukModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) mengubah status pesanan pada pengajuan ini menjadi Diproses.`, true)
-    location.reload()
+    await getData()
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
