@@ -99,29 +99,44 @@ async function getData() {
       </div>
       <div v-if="dokumen?.status" class="justify-end card-actions">
         <RouterLink v-if="currUser.id === dokumen.pengguna?.id && currUser.peran === props.uploader"
-          :to="`/tambah-dokumen?id=${currRoute.query.id}&tipe=${dokumen.tipe}`" class="btn btn-square btn-primary">
+          :to="`/tambah-dokumen?id=${currRoute.query.id}&tipe=${dokumen.tipe}&validator=${props.validator}`"
+          class="btn btn-square btn-primary">
           <i class="fa-solid fa-pencil"></i>
         </RouterLink>
         <a :href="`https://jzybgguiugsdfdgfyczr.supabase.co/storage/v1/object/public/dokumen/${dokumen.id}`"
           target="_blank" class="btn btn-square btn-primary">
           <i class="fa-solid fa-download"></i>
         </a>
-        <button @click="terimaDokumen" v-if="currUser.peran === props.validator" class="btn btn-square btn-success"
-          :disabled="isLoading || dokumen?.status === 'Valid'">
+        <button @click="terimaDokumen"
+          v-if="currUser.peran !== 'PBJ' && currUser.peran === props.validator && props.uploader !== props.validator"
+          class="btn btn-square btn-success" :disabled="isLoading || dokumen?.status === 'Valid'">
           <i class="fa-solid fa-check"></i>
         </button>
-        <button @click="tolakDokumen" v-if="currUser.peran === props.validator" class="btn btn-square btn-error"
-          :disabled="isLoading || dokumen?.status === 'Tidak valid'">
+        <button @click="tolakDokumen"
+          v-if="currUser.peran !== 'PBJ' && currUser.peran === props.validator && props.uploader !== props.validator"
+          class="btn btn-square btn-error" :disabled="isLoading || dokumen?.status === 'Tidak valid'">
+          <i class="fa-solid fa-x"></i>
+        </button>
+        <button @click="terimaDokumen"
+          v-if="currUser.peran === 'PBJ' && currUser.peran === props.validator && currUser.id === props.idPbj"
+          class="btn btn-square btn-success" :disabled="isLoading || dokumen?.status === 'Valid'">
+          <i class="fa-solid fa-check"></i>
+        </button>
+        <button @click="tolakDokumen"
+          v-if="currUser.peran === 'PBJ' && currUser.peran === props.validator && currUser.id === props.idPbj"
+          class="btn btn-square btn-error" :disabled="isLoading || dokumen?.status === 'Tidak valid'">
           <i class="fa-solid fa-x"></i>
         </button>
       </div>
       <div v-else class="justify-end card-actions">
         <RouterLink v-if="props.uploader === 'PBJ' && currUser.id === props.idPbj"
-          :to="`/tambah-dokumen?id=${currRoute.query.id}&tipe=${props.tipe}`" class="btn btn-square btn-primary">
+          :to="`/tambah-dokumen?id=${currRoute.query.id}&tipe=${props.tipe}&validator=${props.validator}`"
+          class="btn btn-square btn-primary">
           <i class="fa-solid fa-plus"></i>
         </RouterLink>
         <RouterLink v-if="props.uploader !== 'PBJ' && currUser.peran === props.uploader"
-          :to="`/tambah-dokumen?id=${currRoute.query.id}&tipe=${props.tipe}`" class="btn btn-square btn-primary">
+          :to="`/tambah-dokumen?id=${currRoute.query.id}&tipe=${props.tipe}&validator=${props.validator}`"
+          class="btn btn-square btn-primary">
           <i class="fa-solid fa-plus"></i>
         </RouterLink>
       </div>

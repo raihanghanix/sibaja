@@ -159,7 +159,7 @@ watch(currRoute, getData, { immediate: true })
         uploader="PBJ" validator="PPK" tipe="bahp" :id-pbj="detailPengajuan.pbj?.id" />
     </div>
     <div v-if="filter === 'bendahara' && !isLoading" class="flex flex-col gap-2">
-      <Dokumen title="Surat Perintah Pembayaran" :data="daftarDokumen.find((i) => i.tipe === 'spm') ?? null"
+      <Dokumen title="Surat Perintah Membayar" :data="daftarDokumen.find((i) => i.tipe === 'spm') ?? null"
         uploader="Bendahara" validator="PPK" tipe="spm" />
     </div>
     <div v-if="filter === 'lampiran' && !isLoading" class="flex flex-col gap-2">

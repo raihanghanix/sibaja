@@ -56,7 +56,7 @@ async function tambahDokumen() {
     isLoading.value = true
     const dokumenId = crypto.randomUUID()
     await dokumenModel.deleteByPengajuan(currRoute.value.query.id as string, currRoute.value.query.tipe as string)
-    await dokumenModel.insert(dokumenId, currRoute.value.query.id as string, currUser?.id!, currRoute.value.query.tipe as TDokumen, namaDokumen.value)
+    await dokumenModel.insert(dokumenId, currRoute.value.query.id as string, currUser?.id!, currRoute.value.query.tipe as TDokumen, namaDokumen.value, currUser.peran === currRoute.value.query.validator as string ? 'Valid' : 'Diproses')
     await dokumenModel.upload(dokumenId, dokumen.value!)
     await kotakMasukModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) mengirim dokumen ${namaDokumen.value}.`, true)
     router.push(`/dokumen?id=${currRoute.value.query.id as string}&filter=${currUser.peran?.toLowerCase()}`)

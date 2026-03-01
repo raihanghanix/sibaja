@@ -20,6 +20,7 @@ const kotakMasukModel = KotakMasuk.getInstance()
 
 const pengajuan = ref<IPengajuan>({})
 const daftarPengguna = ref<IPengguna[]>([])
+const dapatDihapus = ref<boolean>(false)
 const isLoading = ref<boolean>(false)
 
 function formatDate(date: string) {
@@ -39,8 +40,15 @@ async function getData() {
     isLoading.value = true
     const dataPengajuan = await pengajuanModel.getById(currRoute.value.query.id as string)
     const dataPengguna = await penggunaModel.getByTim([dataPengajuan[0]!.tim!])
+    const dataDokumen = await dokumenModel.getByPengajuan(currRoute.value.query.id as string)
+    const filteredData = dataDokumen.filter((i) => {
+      if (i.tipe === 'kak' && i.status === 'Valid') return true
+      if (i.tipe === 'fp' && i.status === 'Valid') return true
+      if (i.tipe === 'spp' && i.status === 'Valid') return true
+    })
     pengajuan.value = dataPengajuan[0]!
     daftarPengguna.value = dataPengguna
+    dapatDihapus.value = filteredData.length > 0 ? false : true
   } catch (err) {
     if (err instanceof Error) {
       alert(err.message)
@@ -212,9 +220,19 @@ onMounted(() => getData())
 
     <div class="divider"></div>
 
-    <div v-if="currUser.peran === 'PJ' || currUser.peran === 'PPK'" class="flex flex-col gap-2">
-      <p class="font-semibold">Aksi Pengajuan (PJ & PPK)</p>
-      <p class="text-sm">Ubah status pengajuan ini</p>
+    <div v-if="currUser.peran === 'PJ'" class="flex flex-col gap-2">
+      <p class="font-semibold">Aksi Pengajuan (PJ)</p>
+      <p class="text-sm">Hapus pengajuan ini</p>
+      <div class="flex gap-2">
+        <button @click="hapusPengajuan" class="btn btn-square btn-error" :disabled="isLoading || !dapatDihapus">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    </div>
+
+    <div v-if="currUser.peran === 'PPK'" class="flex flex-col gap-2">
+      <p class="font-semibold">Aksi Pengajuan (PPK)</p>
+      <p class="text-sm">Ubah status dan hapus pengajuan ini</p>
       <div class="flex gap-2">
         <button @click="prosesPengajuan" class="btn btn-square btn-primary"
           :disabled="isLoading || pengajuan.status === 'Diproses'">
@@ -228,13 +246,13 @@ onMounted(() => getData())
           :disabled="isLoading || pengajuan.status === 'Ditolak'">
           <i class="fa-solid fa-x"></i>
         </button>
-        <button @click="hapusPengajuan" class="btn btn-square btn-error" :disabled="isLoading">
+        <button @click="hapusPengajuan" class="btn btn-square btn-error" :disabled="isLoading || !dapatDihapus">
           <i class="fa-solid fa-trash"></i>
         </button>
       </div>
     </div>
 
-    <div v-if="currUser.peran === 'PBJ'" class="flex flex-col gap-2">
+    <div v-if="currUser.peran === 'PBJ' && currUser.id === pengajuan.pbj?.id" class="flex flex-col gap-2">
       <p class="font-semibold">Aksi Pengajuan (PBJ)</p>
       <p class="text-sm">Ubah status pesanan pengajuan ini</p>
       <div class="flex gap-2">
