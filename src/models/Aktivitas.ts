@@ -1,9 +1,9 @@
 import type { PostgrestSingleResponse } from "@supabase/supabase-js";
 import { supabase } from "../utils/supabase";
-import type { IKotakMasuk, IPengajuan, IPengguna } from "./types";
+import type { IAktivitas, IPengajuan, IPengguna } from "./types";
 
-export class KotakMasuk implements IKotakMasuk {
-  private static instance: KotakMasuk;
+export class Aktivitas implements IAktivitas {
+  private static instance: Aktivitas;
 
   id?: string = "";
   created_at?: string = "";
@@ -12,7 +12,7 @@ export class KotakMasuk implements IKotakMasuk {
   pesan?: string = "";
   khusus?: boolean = false;
 
-  public get(): IKotakMasuk {
+  public get(): IAktivitas {
     return {
       id: this.id,
       created_at: this.created_at,
@@ -23,7 +23,7 @@ export class KotakMasuk implements IKotakMasuk {
     };
   }
 
-  public set(val: IKotakMasuk) {
+  public set(val: IAktivitas) {
     this.id = val.id;
     this.created_at = val.created_at;
     this.pengguna = val.pengguna;
@@ -34,33 +34,33 @@ export class KotakMasuk implements IKotakMasuk {
 
   public async getAll(sort: string, khusus: boolean) {
     const { data, error } = (await supabase
-      .from("kotak_masuk")
+      .from("aktivitas")
       .select("*, pengguna (*)")
       .eq("khusus", khusus)
       .order("created_at", {
         ascending: sort === "asc" ? true : false,
-      })) as PostgrestSingleResponse<IKotakMasuk[]>;
+      })) as PostgrestSingleResponse<IAktivitas[]>;
     if (error) throw new Error(error.message);
     return data;
   }
 
   public async getById(id: string) {
     const { data, error } = (await supabase
-      .from("kotak_masuk")
+      .from("aktivitas")
       .select("*, pengguna (*)")
-      .eq("id", id)) as PostgrestSingleResponse<IKotakMasuk[]>;
+      .eq("id", id)) as PostgrestSingleResponse<IAktivitas[]>;
     if (error) throw new Error(error.message);
     return data;
   }
 
   public async getByPengguna(pengguna: string) {
     const { data, error } = (await supabase
-      .from("kotak_masuk")
+      .from("aktivitas")
       .select("*, pengguna (*)")
       .eq("pengguna", pengguna)
       .order("dibaca", { ascending: true })
       .order("created_at", { ascending: false })) as PostgrestSingleResponse<
-      IKotakMasuk[]
+      IAktivitas[]
     >;
     if (error) throw new Error(error.message);
     return data;
@@ -68,34 +68,34 @@ export class KotakMasuk implements IKotakMasuk {
 
   public async getByPesan(pesan: string) {
     const { data, error } = (await supabase
-      .from("kotak_masuk")
+      .from("aktivitas")
       .select("*, pengguna (*)")
-      .eq("pesan", pesan)) as PostgrestSingleResponse<IKotakMasuk[]>;
+      .eq("pesan", pesan)) as PostgrestSingleResponse<IAktivitas[]>;
     if (error) throw new Error(error.message);
     return data;
   }
 
   public async getByDibaca(dibaca: boolean) {
     const { data, error } = (await supabase
-      .from("kotak_masuk")
+      .from("aktivitas")
       .select("*, pengguna (*)")
-      .eq("dibaca", dibaca)) as PostgrestSingleResponse<IKotakMasuk[]>;
+      .eq("dibaca", dibaca)) as PostgrestSingleResponse<IAktivitas[]>;
     if (error) throw new Error(error.message);
     return data;
   }
 
-  public async updateAll(id: string, val: IKotakMasuk) {
+  public async updateAll(id: string, val: IAktivitas) {
     const query = (await supabase
-      .from("kotak_masuk")
+      .from("aktivitas")
       .update(val)
       .eq("pengguna", id)) as PostgrestSingleResponse<null[]>;
     if (query.error) return false;
     else return true;
   }
 
-  public async updateById(id: string, val: IKotakMasuk) {
+  public async updateById(id: string, val: IAktivitas) {
     const query = (await supabase
-      .from("kotak_masuk")
+      .from("aktivitas")
       .update(val)
       .eq("id", id)) as PostgrestSingleResponse<null[]>;
     if (query.error) return false;
@@ -104,7 +104,7 @@ export class KotakMasuk implements IKotakMasuk {
 
   public async deleteById(id: string) {
     const query = (await supabase
-      .from("kotak_masuk")
+      .from("aktivitas")
       .delete()
       .eq("id", id)) as PostgrestSingleResponse<null>;
     if (query.error) return false;
@@ -113,7 +113,7 @@ export class KotakMasuk implements IKotakMasuk {
 
   public async deleteByPengguna(pengguna: string) {
     const query = (await supabase
-      .from("kotak_masuk")
+      .from("aktivitas")
       .delete()
       .eq("pengguna", pengguna)) as PostgrestSingleResponse<null>;
     if (query.error) return false;
@@ -126,7 +126,7 @@ export class KotakMasuk implements IKotakMasuk {
     pesan: string,
     khusus: boolean,
   ) {
-    const { error } = (await supabase.from("kotak_masuk").insert({
+    const { error } = (await supabase.from("aktivitas").insert({
       id: crypto.randomUUID(),
       pengguna,
       pengajuan,
@@ -137,7 +137,7 @@ export class KotakMasuk implements IKotakMasuk {
   }
 
   public static getInstance() {
-    if (!this.instance) this.instance = new KotakMasuk();
+    if (!this.instance) this.instance = new Aktivitas();
     return this.instance;
   }
 }

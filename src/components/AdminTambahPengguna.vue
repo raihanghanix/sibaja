@@ -1,37 +1,32 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { ref } from 'vue';
-import { getCookies, removeCookies, setCookies } from '../utils/cookies';
+import { onMounted, ref } from 'vue';
+import { getCookies } from '../utils/cookies';
 import { Pengguna } from '../models/Pengguna';
 import { roles, teams, type IPengguna } from '../models/types';
 import Navbar from '../components/Navbar.vue';
 import Required from '../components/Required.vue';
 
 const router = useRouter()
-const currUser = getCookies<IPengguna>('sessionId')
+let currUser = getCookies<IPengguna | undefined>('sessionId') ?? undefined
 const penggunaModel = Pengguna.getInstance()
 
 const forms = ref<IPengguna>({
-  id: currUser.id,
-  nama: currUser.nama,
-  email: currUser.email,
-  password: currUser.password,
-  peran: currUser.peran,
-  tim: currUser.tim
+  id: '',
+  nama: '',
+  email: '',
+  password: '',
+  peran: '',
+  tim: []
 })
 const isLoading = ref<boolean>(false)
 
-function logout() {
-  removeCookies('sessionId')
-  router.push('/login')
-}
-
-async function ubahProfil() {
+async function simpanPengguna() {
   try {
     isLoading.value = true
-    await penggunaModel.updateById(currUser.id!, forms.value)
-    setCookies<IPengguna>('sessionId', forms.value)
-    router.go(-1)
+    await penggunaModel.insert(forms.value)
+    alert('Pengguna berhasil ditambahkan!')
+    router.push('/?view=admin-pengguna')
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -39,31 +34,33 @@ async function ubahProfil() {
   }
 }
 
-async function hapusAkun() {
-  const conf = confirm('Apakah Anda ingin menghapus akun ini?')
-  if (!conf) return
-  try {
-    isLoading.value = true
-    await penggunaModel.deleteById(currUser.id!)
-    removeCookies('sessionId')
-    router.go(-1)
-  } catch (err) {
-    if (err instanceof Error) alert(err.message)
-  } finally {
-    isLoading.value = false
+onMounted(() => {
+  currUser = getCookies<IPengguna | undefined>('sessionId') ?? undefined
+  if (!currUser) {
+    router.replace('/?view=login')
+    return
   }
-}
+  if (currUser && currUser.peran !== 'Admin') {
+    router.go(-1)
+    return
+  }
+})
 </script>
 
 <template>
   <Navbar />
-  <div class="flex flex-col gap-4 p-8">
+  <div class="flex flex-col w-full max-w-5xl gap-4 p-8 mx-auto">
 
     <div class="flex flex-col gap-2">
-      <p class="text-lg font-semibold">Profil</p>
+      <div class="flex justify-between gap-1">
+        <p class="text-lg font-semibold">Tambah Pengguna</p>
+        <button @click="() => router.go(-1)" class="link link-primary">
+          &lt; Kembali
+        </button>
+      </div>
     </div>
 
-    <form @submit.prevent="ubahProfil" class="flex flex-col gap-2" id="form">
+    <form @submit.prevent="simpanPengguna" class="grid grid-cols-2 gap-2 max-sm:grid-cols-1" id="form">
       <fieldset class="fieldset">
         <legend class="fieldset-legend">NIP
           <Required />
@@ -104,7 +101,7 @@ async function hapusAkun() {
           <Required />
         </legend>
         <div v-for="team in teams" class="flex items-center gap-2 truncate">
-          <input v-model="forms.tim" type="checkbox" class="checkbox" name="tim" :id="team" :value="team" />
+          <input v-model="forms.tim![0]" type="radio" class="radio" name="tim" :id="team" :value="team" required />
           <p class="truncate">{{ team }}</p>
         </div>
       </fieldset>
@@ -112,13 +109,7 @@ async function hapusAkun() {
 
     <div class="flex flex-col gap-2">
       <button type="submit" class="w-full btn btn-primary" form="form" :disabled="isLoading">
-        <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
-      </button>
-      <button @click="hapusAkun" class="w-full btn btn-error" :disabled="isLoading">
-        <i class="fa-solid fa-trash"></i> Hapus Akun
-      </button>
-      <button @click="logout" class="w-full btn" :disabled="isLoading">
-        <i class="fa-solid fa-right-from-bracket"></i> Keluar
+        <i class="fa-solid fa-floppy-disk"></i> Simpan Pengguna
       </button>
     </div>
 

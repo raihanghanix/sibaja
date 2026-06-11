@@ -11,7 +11,6 @@ export class Pengajuan implements IPengajuan {
   pesanan?: boolean = false;
   status?: string = "";
   tim?: string = "";
-  disetujui?: boolean = false;
   selesai?: string | null = "";
   pbj?: IPengguna = {};
 
@@ -23,7 +22,6 @@ export class Pengajuan implements IPengajuan {
       pesanan: this.pesanan,
       status: this.status,
       tim: this.tim,
-      disetujui: this.disetujui,
       selesai: this.selesai,
       pbj: this.pbj,
     };
@@ -36,16 +34,14 @@ export class Pengajuan implements IPengajuan {
     this.pesanan = val.pesanan;
     this.status = val.status;
     this.tim = val.tim;
-    this.disetujui = val.disetujui;
     this.selesai = val.selesai;
     this.pbj = val.pbj;
   }
 
-  public async getAll(filter: string, sort: string) {
+  public async getAll(sort: string) {
     const { data, error } = (await supabase
       .from("pengajuan")
       .select("*, pbj (*)")
-      .eq("status", filter)
       .order("created_at", {
         ascending: sort === "asc" ? true : false,
       })) as PostgrestSingleResponse<IPengajuan[]>;
@@ -89,12 +85,11 @@ export class Pengajuan implements IPengajuan {
     return data;
   }
 
-  public async getByTim(tim: string[], filter: string, sort: string) {
+  public async getByTim(tim: string[], sort: string) {
     const { data, error } = (await supabase
       .from("pengajuan")
       .select("*, pbj (*)")
       .ilikeAnyOf("tim", tim)
-      .eq("status", filter)
       .order("created_at", {
         ascending: sort === "asc" ? true : false,
       })) as PostgrestSingleResponse<IPengajuan[]>;

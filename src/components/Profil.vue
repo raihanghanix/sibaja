@@ -1,31 +1,54 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { onMounted, ref } from 'vue';
-import { getCookies } from '../utils/cookies';
+import { getCookies, removeCookies, setCookies } from '../utils/cookies';
 import { Pengguna } from '../models/Pengguna';
 import { roles, teams, type IPengguna } from '../models/types';
 import Navbar from '../components/Navbar.vue';
 import Required from '../components/Required.vue';
 
 const router = useRouter()
-const currUser = getCookies<IPengguna>('sessionId')
+let currUser = getCookies<IPengguna | undefined>('sessionId') ?? undefined
 const penggunaModel = Pengguna.getInstance()
 
 const forms = ref<IPengguna>({
-  id: '',
-  nama: '',
-  email: '',
-  password: '',
-  peran: '',
-  tim: []
+  id: currUser?.id ?? '',
+  nama: currUser?.nama ?? '',
+  email: currUser?.email ?? '',
+  password: currUser?.password ?? '',
+  peran: currUser?.peran ?? '',
+  tim: currUser?.tim ?? []
 })
 const isLoading = ref<boolean>(false)
 
-async function simpanPengguna() {
+function logout() {
+  removeCookies('sessionId')
+  router.push('/?view=login')
+}
+
+async function ubahProfil() {
   try {
     isLoading.value = true
-    await penggunaModel.insert(forms.value)
-    router.push('/admin-pengguna')
+    await penggunaModel.updateById(currUser?.id!, forms.value)
+    setCookies<IPengguna>('sessionId', forms.value)
+    alert('Akun berhasil diubah!')
+    router.go(-1)
+  } catch (err) {
+    if (err instanceof Error) alert(err.message)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+async function hapusAkun() {
+  const conf = confirm('Apakah Anda ingin menghapus akun ini?')
+  if (!conf) return
+  try {
+    isLoading.value = true
+    await penggunaModel.deleteById(currUser?.id!)
+    removeCookies('sessionId')
+    alert('Akun berhasil dihapus!')
+    router.push('/?view=login')
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -34,24 +57,23 @@ async function simpanPengguna() {
 }
 
 onMounted(() => {
-  if (currUser.peran !== 'Admin') return router.go(-1)
+  currUser = getCookies<IPengguna | undefined>('sessionId') ?? undefined
+  if (!currUser) {
+    router.replace('/?view=login')
+    return
+  }
 })
 </script>
 
 <template>
   <Navbar />
-  <div class="flex flex-col gap-4 p-8">
+  <div class="flex flex-col w-full max-w-5xl gap-4 p-8 mx-auto">
 
     <div class="flex flex-col gap-2">
-      <div class="flex justify-between gap-1">
-        <p class="text-lg font-semibold">Tambah Pengguna</p>
-        <button @click="() => router.go(-1)" class="underline cursor-pointer text-primary">
-          &lt; Kembali
-        </button>
-      </div>
+      <p class="text-lg font-semibold">Profil</p>
     </div>
 
-    <form @submit.prevent="simpanPengguna" class="flex flex-col gap-2" id="form">
+    <form @submit.prevent="ubahProfil" class="grid grid-cols-2 gap-2 max-sm:grid-cols-1" id="form">
       <fieldset class="fieldset">
         <legend class="fieldset-legend">NIP
           <Required />
@@ -92,7 +114,7 @@ onMounted(() => {
           <Required />
         </legend>
         <div v-for="team in teams" class="flex items-center gap-2 truncate">
-          <input v-model="forms.tim" type="checkbox" class="checkbox" name="tim" :id="team" :value="team" />
+          <input v-model="forms.tim![0]" type="radio" class="radio" name="tim" :value="team" required />
           <p class="truncate">{{ team }}</p>
         </div>
       </fieldset>
@@ -100,7 +122,13 @@ onMounted(() => {
 
     <div class="flex flex-col gap-2">
       <button type="submit" class="w-full btn btn-primary" form="form" :disabled="isLoading">
-        <i class="fa-solid fa-floppy-disk"></i> Simpan Pengguna
+        <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
+      </button>
+      <button @click="hapusAkun" class="w-full btn btn-error" :disabled="isLoading">
+        <i class="fa-solid fa-trash"></i> Hapus Akun
+      </button>
+      <button @click="logout" class="w-full btn" :disabled="isLoading">
+        <i class="fa-solid fa-right-from-bracket"></i> Keluar
       </button>
     </div>
 

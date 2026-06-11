@@ -103,20 +103,6 @@ export class Pengguna implements IPengguna {
     return data;
   }
 
-  // public async getByTeam(team: string[]) {
-  //   const query = (await supabase
-  //     .from("pengguna")
-  //     .select("*")
-  //     .contains("tim", team)) as PostgrestSingleResponse<IPengguna[]>;
-  //   if (query.error) {
-  //     return null;
-  //   } else if (query.data && query.data.length > 0) {
-  //     return query.data;
-  //   } else {
-  //     return null;
-  //   }
-  // }
-
   public async updateById(id: string, val: IPengguna) {
     const { error } = (await supabase
       .from("pengguna")

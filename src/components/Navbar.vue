@@ -5,40 +5,106 @@ import { getCookies } from '../utils/cookies';
 
 const router = useRouter()
 const currRoute = router.currentRoute
-const auth = getCookies<IPengguna>('sessionId')
+let currUser = getCookies<IPengguna | undefined>('sessionId') ?? undefined
 </script>
 
 <template>
-  <nav class="navbar bg-base-100">
-    <div class="flex-1 truncate">
-      <button @click="() => router.push('/')" class="gap-0 text-lg btn">
+  <!-- Desktop -->
+  <nav class="shadow-sm navbar bg-base-100 max-sm:hidden">
+    <div class="flex-none">
+      <RouterLink to="/?view=beranda" class="gap-0 text-xl btn btn-ghost">
         <span class="text-bps-blue">SI</span>
         <span class="text-bps-green">BA</span>
         <span class="text-bps-orange">JA</span>
-      </button>
+      </RouterLink>
+    </div>
+    <div class="flex-1">
+      <ul class="px-1 menu menu-horizontal join">
+        <li>
+          <RouterLink to="/?view=beranda"
+            :class="`join-item btn ${currRoute.query.view === 'beranda' && 'btn-active'}`">
+            <i class="fa-solid fa-home"></i> Beranda
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="/?view=aktivitas-tim"
+            :class="`join-item btn ${currRoute.query.view === 'aktivitas-tim' && 'btn-active'}`">
+            <i class="fa-solid fa-list"></i> Aktivitas Tim
+          </RouterLink>
+        </li>
+      </ul>
     </div>
     <div class="flex-none">
-      <div role="tablist" class="tabs tabs-border">
-        <button @click="() => router.push('/')" role="tab"
-          :class="`tab ${currRoute.query.halaman === 'beranda' && 'tab-active'}`">
-          <i class="fa-solid fa-home"></i>
-        </button>
-        <button @click="() => router.push('/aktivitas')" role="tab"
-          :class="`tab indicator ${currRoute.query.halaman === 'aktivitas' && 'tab-active'}`">
-          <i class="fa-solid fa-list"></i><span class="indicator status status-error"></span>
-        </button>
-        <button v-if="auth?.peran === 'Admin'" @click="() => router.push('/admin-pengguna')" role="tab"
-          :class="`tab ${currRoute.query.halaman === 'admin' && 'tab-active'}`">
-          <i class="fa-solid fa-lock"></i>
-        </button>
-        <button @click="() => router.push('/profil')" role="tab"
-          :class="`tab ${currRoute.query.halaman === 'profil' && 'tab-active'}`">
-          <i class="fa-solid fa-user-circle"></i>
-        </button>
-      </div>
+      <ul class="px-1 menu menu-horizontal max join">
+        <li v-if="currUser?.peran === 'Admin'">
+          <RouterLink to="/?view=admin-pengguna"
+            :class="`join-item btn btn-primary ${currRoute.query.view?.includes('admin') && 'btn-active'}`">
+            <i class="fa-solid fa-lock"></i> Menu Admin
+          </RouterLink>
+        </li>
+        <li v-if="currUser?.peran === 'PJ'">
+          <RouterLink to="/?view=pengajuan-baru"
+            :class="`join-item btn btn-primary ${currRoute.query.view === 'pengajuan-baru' && 'btn-active'}`">
+            <i class="fa-solid fa-plus"></i> Pengajuan Baru
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="/?view=profil" :class="`join-item btn ${currRoute.query.view === 'profil' && 'btn-active'}`">
+            <i class="fa-solid fa-user"></i> Profil
+          </RouterLink>
+        </li>
+      </ul>
     </div>
   </nav>
+  <!-- Mobile -->
+  <nav class="shadow-sm navbar bg-base-100 sm:hidden">
+    <div class="flex-none max-[410px]:hidden">
+      <RouterLink to="/" class="gap-0 text-xl btn btn-ghost">
+        <span class="text-bps-blue">SI</span>
+        <span class="text-bps-green">BA</span>
+        <span class="text-bps-orange">JA</span>
+      </RouterLink>
+    </div>
+    <div class="flex-1">
+      <ul class="px-1 menu menu-horizontal join">
+        <li>
+          <RouterLink to="/?view=beranda"
+            :class="`join-item btn ${currRoute.query.view === 'beranda' && 'btn-active'}`">
+            <i class="fa-solid fa-home"></i>
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="/?view=aktivitas-tim"
+            :class="`join-item btn ${currRoute.query.view === 'aktivitas-tim' && 'btn-active'}`">
+            <i class="fa-solid fa-list"></i>
+          </RouterLink>
+        </li>
+      </ul>
+    </div>
+    <div class="flex-none">
+      <ul class="px-1 menu menu-horizontal max join">
+        <li v-if="currUser?.peran === 'Admin'">
+          <RouterLink to="/?view=admin-pengguna"
+            :class="`join-item btn btn-primary ${currRoute.query.view?.includes('admin') && 'btn-active'}`">
+            <i class="fa-solid fa-lock"></i> Admin
+          </RouterLink>
+        </li>
+        <li v-if="currUser?.peran === 'PJ'">
+          <RouterLink to="/?view=pengajuan-baru"
+            :class="`join-item btn btn-primary ${currRoute.query.view === 'pengajuan-baru' && 'btn-active'}`">
+            <i class="fa-solid fa-plus"></i> Pengajuan
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="/?view=profil" :class="`join-item btn ${currRoute.query.view === 'profil' && 'btn-active'}`">
+            <i class="fa-solid fa-user"></i>
+          </RouterLink>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  <!-- User -->
   <div class="p-2 truncate bg-primary text-base-100">
-    <span class="p-4 text-sm truncate">{{ auth?.nama }} ({{ auth?.peran }})</span>
+    <span class="p-4 text-sm truncate">{{ currUser?.nama }} ({{ currUser?.peran }})</span>
   </div>
 </template>

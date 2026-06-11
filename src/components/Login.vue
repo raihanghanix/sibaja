@@ -4,7 +4,7 @@ import { ref } from 'vue';
 import { setCookies } from '../utils/cookies';
 import { Pengguna } from '../models/Pengguna';
 import { type IPengguna } from '../models/types';
-import Required from '../components/Required.vue';
+import Required from './Required.vue';
 
 const router = useRouter()
 
@@ -23,7 +23,8 @@ async function login() {
     const filteredData = data.find((i) => i.email === forms.value.email && i.password === forms.value.password)
     if (filteredData) {
       setCookies<IPengguna>('sessionId', filteredData)
-      router.push('/')
+      alert(`Selamat datang, ${filteredData.nama}!`)
+      router.push('/?view=beranda')
     }
     else {
       alert('Email atau password salah!')
@@ -37,8 +38,8 @@ async function login() {
 </script>
 
 <template>
-  <main class="flex items-center justify-center min-h-screen p-8">
-
+  <main
+    class="flex items-center justify-center min-h-screen p-8 bg-[url(assets/background-bps.jpg)] bg-center bg-cover bg-no-repeat">
     <div class="w-72 card card-border bg-base-100">
       <div class="card-body">
         <p class="gap-0 card-title">
@@ -72,6 +73,5 @@ async function login() {
         </form>
       </div>
     </div>
-
   </main>
 </template>

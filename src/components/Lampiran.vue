@@ -38,7 +38,7 @@ function formatTime(time: string) {
       </div>
       <div class="justify-end card-actions">
         <RouterLink v-if="currUser.id === i.pengguna?.id"
-          :to="`/tambah-lampiran?id=${currRoute.query.id}&idLampiran=${i.id}`" class="btn btn-square btn-primary">
+          :to="`/?view=tambah-lampiran&id=${currRoute.query.id}&idLampiran=${i.id}`" class="btn btn-square btn-primary">
           <i class="fa-solid fa-pencil"></i>
         </RouterLink>
         <a :href="`https://jzybgguiugsdfdgfyczr.supabase.co/storage/v1/object/public/dokumen/${i.id}`" target="_blank"
@@ -48,7 +48,7 @@ function formatTime(time: string) {
       </div>
     </div>
   </div>
-  <div v-else class="flex flex-col gap-2">
-    <p class="text-center">Tidak ada lampiran</p>
+  <div v-else class="flex flex-col gap-2 text-sm font-semibold text-center">
+    <p>Tidak ada lampiran</p>
   </div>
 </template>

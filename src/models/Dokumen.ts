@@ -78,11 +78,10 @@ export class Dokumen implements IDokumen {
     return data;
   }
 
-  public async getByStatus(status: string, sort: string) {
+  public async getByStatus(sort: string) {
     const { data, error } = (await supabase
       .from("dokumen")
       .select("*, pengajuan (*), pengguna (*)")
-      .eq("status", status)
       .order("created_at", {
         ascending: sort === "asc" ? true : false,
       })) as PostgrestSingleResponse<IDokumen[]>;

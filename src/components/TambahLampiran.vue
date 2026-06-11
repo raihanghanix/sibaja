@@ -4,7 +4,7 @@ import { onMounted, ref } from 'vue';
 import { getCookies } from '../utils/cookies';
 import { Pengajuan } from '../models/Pengajuan';
 import { Dokumen } from '../models/Dokumen';
-import { KotakMasuk } from '../models/KotakMasuk';
+import { Aktivitas } from '../models/Aktivitas';
 import type { IPengajuan, IPengguna } from '../models/types';
 import Navbar from '../components/Navbar.vue';
 import Required from '../components/Required.vue';
@@ -15,7 +15,7 @@ const currUser = getCookies<IPengguna>('sessionId')
 
 const pengajuanModel = Pengajuan.getInstance()
 const dokumenModel = Dokumen.getInstance()
-const kotakMasukModel = KotakMasuk.getInstance()
+const aktivitasModel = Aktivitas.getInstance()
 
 const detailPengajuan = ref<IPengajuan>({})
 const idLampiran = ref<string>('')
@@ -39,16 +39,16 @@ async function tambahLampiran() {
       const lampiranId = crypto.randomUUID()
       await dokumenModel.insert(lampiranId, currRoute.value.query.id as string, currUser?.id!, 'lampiran', namaLampiran.value)
       await dokumenModel.upload(lampiranId, lampiran.value!)
-      await kotakMasukModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) mengirim lampiran ${namaLampiran.value}.`, true)
+      await aktivitasModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) mengirim lampiran ${namaLampiran.value}.`, true)
     } else {
       const lampiranId = crypto.randomUUID()
       await dokumenModel.deleteById(currRoute.value.query.idLampiran as string)
       await dokumenModel.deleteFile(currRoute.value.query.idLampiran as string)
       await dokumenModel.insert(lampiranId, currRoute.value.query.id as string, currUser?.id!, 'lampiran', namaLampiran.value)
       await dokumenModel.upload(lampiranId, lampiran.value!)
-      await kotakMasukModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) mengirim lampiran ${namaLampiran.value}.`, true)
+      await aktivitasModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) mengirim lampiran ${namaLampiran.value}.`, true)
     }
-    router.push(`/dokumen?id=${currRoute.value.query.id as string}&filter=lampiran`)
+    router.push(`/?view=dokumen-pengajuan&id=${currRoute.value.query.id as string}&filter=lampiran`)
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -64,9 +64,9 @@ async function hapusLampiran() {
     if (currRoute.value.query.idLampiran) {
       await dokumenModel.deleteById(currRoute.value.query.idLampiran as string)
       await dokumenModel.deleteFile(currRoute.value.query.idLampiran as string)
-      await kotakMasukModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) menghapus lampiran ${namaLampiran.value}.`, true)
+      await aktivitasModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) menghapus lampiran ${namaLampiran.value}.`, true)
     }
-    router.push(`/dokumen?id=${currRoute.value.query.id as string}&filter=lampiran`)
+    router.push(`/?view=dokumen-pengajuan&id=${currRoute.value.query.id as string}&filter=lampiran`)
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -102,19 +102,19 @@ onMounted(() => getData())
 
 <template>
   <Navbar />
-  <div class="flex flex-col gap-4 p-8">
+  <div class="flex flex-col w-full max-w-5xl gap-4 p-8 mx-auto">
 
     <div class="flex flex-col gap-2">
       <div class="flex justify-between gap-1">
         <p class="text-lg font-semibold">Tambah/Edit Lampiran</p>
-        <button @click="() => router.go(-1)" class="underline cursor-pointer text-primary">
+        <button @click="() => router.go(-1)" class="link link-primary">
           &lt; Kembali
         </button>
       </div>
     </div>
 
-    <div class="flex flex-col gap-2 ">
-      <p class="text-sm">{{ detailPengajuan.nama ?? '...' }}</p>
+    <div class="flex flex-wrap gap-2">
+      <span class="badge badge-secondary">{{ detailPengajuan.nama ?? '...' }}</span>
     </div>
 
     <form @submit.prevent="tambahLampiran" class="flex flex-col gap-2" id="form">

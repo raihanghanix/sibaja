@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { ref, watch } from 'vue';
+import { getCookies } from '../utils/cookies';
 import { Pengajuan } from '../models/Pengajuan';
 import { Dokumen as Dok } from '../models/Dokumen';
-import type { IDokumen, IPengajuan } from '../models/types';
+import type { IDokumen, IPengajuan, IPengguna } from '../models/types';
 import Navbar from '../components/Navbar.vue';
 import Dokumen from '../components/Dokumen.vue';
 import Lampiran from '../components/Lampiran.vue';
 
 const router = useRouter()
 const currRoute = router.currentRoute
+let currUser = getCookies<IPengguna | undefined>('sessionId') ?? undefined
 
 const pengajuanModel = Pengajuan.getInstance()
 const dokumenModel = Dok.getInstance()
@@ -25,7 +27,7 @@ function reset() {
 
 function handleFilter(e: Event) {
   const target = e.target as HTMLInputElement
-  router.push(`/dokumen?id=${currRoute.value.query.id}&filter=${target.value}`)
+  router.push(`/?view=dokumen-pengajuan&id=${currRoute.value.query.id}&filter=${target.value}`)
 }
 
 async function getData() {
@@ -50,77 +52,72 @@ async function getData() {
   }
 }
 
-watch(currRoute, getData, { immediate: true })
+watch(currRoute, () => {
+  currUser = getCookies<IPengguna | undefined>('sessionId') ?? undefined
+  if (!currUser) {
+    router.replace('/?view=login')
+    return
+  }
+  getData()
+}, { immediate: true })
 </script>
 
 <template>
   <Navbar />
-  <div class="flex flex-col gap-4 p-8">
+  <div class="flex flex-col w-full max-w-5xl gap-4 p-8 mx-auto">
 
     <div class="flex flex-col gap-2">
       <div class="flex justify-between gap-1">
-        <p class="text-lg font-semibold">{{ detailPengajuan.nama ?? '...' }}</p>
-        <button @click="() => router.push('/')" class="underline cursor-pointer text-primary">
+        <p class="text-lg font-semibold">{{ detailPengajuan?.nama ?? '...' }}</p>
+        <button @click="() => router.go(-1)" class="link link-primary">
           &lt; Kembali
         </button>
       </div>
     </div>
 
-    <div class="flex flex-col gap-2">
-      <div role="tablist" class="tabs tabs-box w-fit">
-        <RouterLink :to="`/pengajuan?id=${currRoute.query.id}`" role="tab"
-          :class="`tab ${currRoute.path === '/pengajuan' && 'tab-active'}`">
-          Detail
-        </RouterLink>
-        <RouterLink :to="`/dokumen?id=${currRoute.query.id}`" role="tab"
-          :class="`tab ${currRoute.path === '/dokumen' && 'tab-active'}`">
-          Dokumen
-        </RouterLink>
-        <RouterLink :to="`/aktivitas-pengajuan?id=${currRoute.query.id}`" role="tab"
-          :class="`indicator tab ${currRoute.path === '/aktivitas-pengajuan' && 'tab-active'}`">
-          Aktivitas<span class="indicator-item status status-error"></span>
-        </RouterLink>
-      </div>
+    <div class="flex flex-wrap gap-2">
+      <RouterLink :to="`/?view=detail-pengajuan&id=${currRoute.query.id}`"
+        :class="`btn btn-xs ${currRoute.query.view === 'detail-pengajuan' && 'btn-secondary'}`">
+        Detail Pengajuan
+      </RouterLink>
+      <RouterLink :to="`/?view=dokumen-pengajuan&id=${currRoute.query.id}`"
+        :class="`btn btn-xs ${currRoute.query.view === 'dokumen-pengajuan' && 'btn-secondary'}`">
+        Dokumen Pengajuan
+      </RouterLink>
+      <RouterLink :to="`/?view=aktivitas-pengajuan&id=${currRoute.query.id}`"
+        :class="`btn btn-xs ${currRoute.query.view === 'aktivitas-pengajuan' && 'btn-secondary'}`">
+        Aktivitas Pengajuan
+      </RouterLink>
     </div>
 
-    <div class="divider"></div>
-
-    <div class="flex flex-col gap-2">
-      <p class="font-semibold">Dokumen Pengajuan</p>
-      <p class="text-sm">Berdasarkan tipe</p>
-    </div>
-
-    <div class="flex flex-col gap-2">
-      <fieldset class="fieldset">
+    <div class="flex gap-2 max-sm:flex-col">
+      <fieldset class="flex-1 fieldset">
         <legend class="fieldset-legend">Tipe Dokumen</legend>
-        <div class="flex items-center gap-2 truncate">
-          <input v-model="filter" @change="handleFilter" type="radio" class="radio" name="tipe" value="pj" />
-          <p class="truncate">PJ</p>
-        </div>
-        <div class="flex items-center gap-2 truncate">
-          <input v-model="filter" @change="handleFilter" type="radio" class="radio" name="tipe" value="ppk" />
-          <p class="truncate">PPK</p>
-        </div>
-        <div class="flex items-center gap-2 truncate">
-          <input v-model="filter" @change="handleFilter" type="radio" class="radio" name="tipe" value="pbj" />
-          <p class="truncate">PBJ</p>
-        </div>
-        <div class="flex items-center gap-2 truncate">
-          <input v-model="filter" @change="handleFilter" type="radio" class="radio" name="tipe" value="bendahara" />
-          <p class="truncate">Bendahara</p>
-        </div>
-        <div class="flex items-center gap-2 truncate">
-          <input v-model="filter" @change="handleFilter" type="radio" class="radio" name="tipe" value="lampiran" />
-          <p class="truncate">Lampiran</p>
-        </div>
+        <select v-model="filter" @change="handleFilter" class="w-full select">
+          <option value="pj">PJ (3)</option>
+          <option value="ppk">PPK (10)</option>
+          <option value="pbj">PBJ (2)</option>
+          <option value="bendahara">Bendahara (1)</option>
+          <option value="lampiran">Lampiran ({{daftarDokumen.filter((i) => i.tipe === 'lampiran').length ?? 0}})
+          </option>
+        </select>
+      </fieldset>
+      <fieldset class="fieldset">
+        <legend class="invisible max-sm:hidden fieldset-legend">Urutkan</legend>
+        <button @click="getData" class="btn"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </fieldset>
+      <fieldset class="fieldset">
+        <legend class="invisible max-sm:hidden fieldset-legend">Urutkan</legend>
+        <RouterLink :to="`/?view=tambah-lampiran&id=${currRoute.query.id}`" class="btn btn-soft btn-primary">
+          <i class="fa-solid fa-plus"></i> Lampiran Baru
+        </RouterLink>
       </fieldset>
     </div>
 
-    <div v-if="filter === 'lampiran' && !isLoading" class="flex flex-col gap-2">
-      <RouterLink :to="`/tambah-lampiran?id=${currRoute.query.id}`" class="btn btn-soft btn-primary">
-        <i class="fa-solid fa-plus"></i> Lampiran Baru
-      </RouterLink>
-    </div>
+    <div v-if="filter === 'lampiran'" class="divider">Menampilkan {{daftarDokumen.filter((i) => i.tipe ===
+      'lampiran').length
+      ?? 0}} Lampiran</div>
+    <div v-else class="divider">Menampilkan Dokumen {{ filter.toUpperCase() }}</div>
 
     <div v-if="filter === 'pj' && !isLoading" class="flex flex-col gap-2">
       <Dokumen title="Kerangka Acuan Kerja" :data="daftarDokumen.find((i) => i.tipe === 'kak') ?? null" uploader="PJ"

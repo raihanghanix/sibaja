@@ -4,7 +4,7 @@ import { onMounted, ref } from 'vue';
 import { getCookies } from '../utils/cookies';
 import { Pengajuan } from '../models/Pengajuan';
 import { Dokumen } from '../models/Dokumen';
-import { KotakMasuk } from '../models/KotakMasuk';
+import { Aktivitas } from '../models/Aktivitas';
 import type { IPengajuan, IPengguna, TDokumen } from '../models/types';
 import Navbar from '../components/Navbar.vue';
 import Required from '../components/Required.vue';
@@ -15,7 +15,7 @@ const currUser = getCookies<IPengguna>('sessionId')
 
 const pengajuanModel = Pengajuan.getInstance()
 const dokumenModel = Dokumen.getInstance()
-const kotakMasukModel = KotakMasuk.getInstance()
+const aktivitasModel = Aktivitas.getInstance()
 
 const detailPengajuan = ref<IPengajuan>({})
 const namaDokumen = ref<string>('')
@@ -58,8 +58,8 @@ async function tambahDokumen() {
     await dokumenModel.deleteByPengajuan(currRoute.value.query.id as string, currRoute.value.query.tipe as string)
     await dokumenModel.insert(dokumenId, currRoute.value.query.id as string, currUser?.id!, currRoute.value.query.tipe as TDokumen, namaDokumen.value, currUser.peran === currRoute.value.query.validator as string ? 'Valid' : 'Diproses')
     await dokumenModel.upload(dokumenId, dokumen.value!)
-    await kotakMasukModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) mengirim dokumen ${namaDokumen.value}.`, true)
-    router.push(`/dokumen?id=${currRoute.value.query.id as string}&filter=${currUser.peran?.toLowerCase()}`)
+    await aktivitasModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) mengirim dokumen ${namaDokumen.value}.`, true)
+    router.push(`/?view=dokumen-pengajuan&id=${currRoute.value.query.id as string}&filter=${currUser.peran?.toLowerCase()}`)
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -73,8 +73,8 @@ async function hapusDokumen() {
   try {
     isLoading.value = true
     await dokumenModel.deleteByPengajuan(currRoute.value.query.id as string, currRoute.value.query.tipe as string)
-    await kotakMasukModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) menghapus dokumen ${namaDokumen.value}.`, true)
-    router.push(`/dokumen?id=${currRoute.value.query.id as string}&filter=${currUser.peran?.toLowerCase()}`)
+    await aktivitasModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) menghapus dokumen ${namaDokumen.value}.`, true)
+    router.push(`/?view=dokumen-pengajuan&id=${currRoute.value.query.id as string}&filter=${currUser.peran?.toLowerCase()}`)
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -108,19 +108,19 @@ onMounted(() => getData())
 
 <template>
   <Navbar />
-  <div class="flex flex-col gap-4 p-8">
+  <div class="flex flex-col w-full max-w-5xl gap-4 p-8 mx-auto">
 
     <div class="flex flex-col gap-2">
       <div class="flex justify-between gap-1">
         <p class="text-lg font-semibold">Tambah/Edit Dokumen</p>
-        <button @click="() => router.go(-1)" class="underline cursor-pointer text-primary">
+        <button @click="() => router.go(-1)" class="link link-primary">
           &lt; Kembali
         </button>
       </div>
     </div>
 
-    <div class="flex flex-col gap-2 ">
-      <p class="text-sm">{{ detailPengajuan.nama ?? '...' }}</p>
+    <div class="flex flex-wrap gap-2">
+      <span class="badge badge-secondary">{{ detailPengajuan.nama ?? '...' }}</span>
     </div>
 
     <form @submit.prevent="tambahDokumen" class="flex flex-col gap-2" id="form">

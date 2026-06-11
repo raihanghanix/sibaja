@@ -8,19 +8,17 @@ import Navbar from '../components/Navbar.vue';
 
 const router = useRouter()
 const currRoute = router.currentRoute
-const currUser = getCookies<IPengguna>('sessionId')
+let currUser = getCookies<IPengguna | undefined>('sessionId') ?? undefined
 
 const pengajuanModel = Pengajuan.getInstance()
 
 const filter = ref<string>(currRoute.value.query.filter as string ?? 'Diproses')
 const sort = ref<string>(currRoute.value.query.sort as string ?? 'desc')
 const daftarPengajuan = ref<IPengajuan[]>([])
+const jumlahDiproses = ref<number>(0)
+const jumlahSelesai = ref<number>(0)
+const jumlahDitolak = ref<number>(0)
 const isLoading = ref<boolean>(false)
-
-function formatTim() {
-  if (currUser.peran === 'PJ' || currUser.peran === 'Ketua Tim') return currUser.tim
-  else return 'Semua tim'
-}
 
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString('id', { dateStyle: 'full' })
@@ -31,6 +29,10 @@ function formatTime(time: string) {
 }
 
 function reset() {
+  jumlahDiproses.value = 0
+  jumlahSelesai.value = 0
+  jumlahDitolak.value = 0
+  daftarPengajuan.value = []
   filter.value = currRoute.value.query.filter as string ?? 'Diproses'
   sort.value = currRoute.value.query.sort as string ?? 'desc'
 }
@@ -38,26 +40,24 @@ function reset() {
 function handleFilter(e: Event) {
   const target = e.target as HTMLInputElement
   filter.value = target.value
-  router.push(`/?filter=${filter.value}&sort=${sort.value}`)
+  router.push(`/?view=admin-pengajuan&filter=${filter.value}&sort=${sort.value}`)
 }
 
 function handleSort(e: Event) {
   const target = e.target as HTMLInputElement
   sort.value = target.value
-  router.push(`/?filter=${filter.value}&sort=${sort.value}`)
+  router.push(`/?view=admin-pengajuan&filter=${filter.value}&sort=${sort.value}`)
 }
 
 async function getData() {
   try {
     isLoading.value = true
     reset()
-    if (currUser.peran === 'PJ' || currUser.peran === 'Ketua Tim') {
-      const data = await pengajuanModel.getByTim(currUser.tim!, filter.value, sort.value)
-      daftarPengajuan.value = data
-    } else {
-      const data = await pengajuanModel.getAll(filter.value, sort.value)
-      daftarPengajuan.value = data
-    }
+    const data = await pengajuanModel.getAll(sort.value)
+    jumlahDiproses.value = data.filter((i) => i.status === 'Diproses').length
+    jumlahSelesai.value = data.filter((i) => i.status === 'Selesai').length
+    jumlahDitolak.value = data.filter((i) => i.status === 'Ditolak').length
+    daftarPengajuan.value = data.filter((i) => i.status === filter.value)
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -65,59 +65,70 @@ async function getData() {
   }
 }
 
-watch(currRoute, getData, { immediate: true })
+watch(currRoute, () => {
+  currUser = getCookies<IPengguna | undefined>('sessionId') ?? undefined
+  if (!currUser) {
+    router.replace('/?view=login')
+    return
+  }
+  if (currUser && currUser.peran !== 'Admin') {
+    router.go(-1)
+    return
+  }
+  getData()
+}, { immediate: true })
 </script>
 
 <template>
   <Navbar />
-  <div class="flex flex-col gap-4 p-8">
+  <div class="flex flex-col w-full max-w-5xl gap-4 p-8 mx-auto">
 
     <div class="flex flex-col gap-2">
-      <p class="text-lg font-semibold">Daftar Pengajuan</p>
+      <p class="text-lg font-semibold">Menu Admin</p>
     </div>
 
-    <div class="flex flex-col gap-2 ">
-      <p class="text-sm">{{ formatTim() }}</p>
-    </div>
-
-    <div class="flex flex-col gap-2">
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend">Status</legend>
-        <div class="flex items-center gap-2 truncate">
-          <input v-model="filter" @change="handleFilter" type="radio" class="radio" name="filter" value="Diproses" />
-          <p class="truncate">Diproses</p>
-        </div>
-        <div class="flex items-center gap-2 truncate">
-          <input v-model="filter" @change="handleFilter" type="radio" class="radio" name="filter" value="Selesai" />
-          <p class="truncate">Selesai</p>
-        </div>
-        <div class="flex items-center gap-2 truncate">
-          <input v-model="filter" @change="handleFilter" type="radio" class="radio" name="filter" value="Ditolak" />
-          <p class="truncate">Ditolak</p>
-        </div>
-      </fieldset>
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend">Urutkan</legend>
-        <div class="flex items-center gap-2 truncate">
-          <input v-model="sort" @change="handleSort" type="radio" class="radio" name="sort" value="asc" />
-          <p class="truncate">Menaik</p>
-        </div>
-        <div class="flex items-center gap-2 truncate">
-          <input v-model="sort" @change="handleSort" type="radio" class="radio" name="sort" value="desc" />
-          <p class="truncate">Menurun</p>
-        </div>
-      </fieldset>
-    </div>
-
-    <div v-if="currUser.peran === 'PJ'" class="flex flex-col gap-2">
-      <RouterLink to="/tambah-pengajuan" class="btn btn-soft btn-primary">
-        <i class="fa-solid fa-plus"></i> Pengajuan Baru
+    <div class="flex flex-wrap gap-2">
+      <RouterLink to="/?view=admin-pengguna"
+        :class="`btn btn-xs ${currRoute.query.view === 'admin-pengguna' && 'btn-secondary'}`">
+        Daftar Pengguna
+      </RouterLink>
+      <RouterLink to="/?view=admin-pengajuan"
+        :class="`btn btn-xs ${currRoute.query.view === 'admin-pengajuan' && 'btn-secondary'}`">
+        Daftar Pengajuan
+      </RouterLink>
+      <RouterLink to="/?view=admin-dokumen"
+        :class="`btn btn-xs ${currRoute.query.view === 'admin-dokumen' && 'btn-secondary'}`">
+        Daftar Dokumen
       </RouterLink>
     </div>
 
+    <div class="flex gap-2 max-sm:flex-col">
+      <fieldset class="flex-1 fieldset">
+        <legend class="fieldset-legend">Status</legend>
+        <select v-model="filter" @change="handleFilter" class="w-full select">
+          <option value="Diproses">Diproses ({{ jumlahDiproses }})</option>
+          <option value="Selesai">Selesai ({{ jumlahSelesai }})</option>
+          <option value="Ditolak">Ditolak ({{ jumlahDitolak }})</option>
+        </select>
+      </fieldset>
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend">Urutkan</legend>
+        <select v-model="sort" @change="handleSort" class="w-full select">
+          <option value="asc">Terlama (Z-A)</option>
+          <option value="desc">Terbaru (A-Z)</option>
+        </select>
+      </fieldset>
+      <fieldset class="fieldset">
+        <legend class="invisible max-sm:hidden fieldset-legend">Urutkan</legend>
+        <button @click="getData" class="btn"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </fieldset>
+    </div>
+
+    <div class="divider">Menampilkan {{ daftarPengajuan.length ?? 0 }} Item</div>
+
     <div v-if="daftarPengajuan.length" class="flex flex-col gap-2">
       <div v-for="i in daftarPengajuan" class="w-full card card-border bg-base-100">
-        <div class="card-body">
+        <RouterLink :to="`/?view=admin-edit-pengajuan&id=${i.id}`" class="card-body hover:bg-base-200">
           <div class="flex justify-between gap-1 truncate">
             <h2 class="text-base truncate card-title">{{ i.nama }}</h2>
             <div v-if="i.status === 'Diproses'" class="badge badge-soft badge-info">Diproses</div>
@@ -138,16 +149,11 @@ watch(currRoute, getData, { immediate: true })
             </p>
             <p><i class="truncate fa-solid fa-box"></i> Pesanan {{ i.pesanan ? 'selesai' : 'diproses' }}</p>
           </div>
-          <div class="justify-end card-actions">
-            <RouterLink :to="`/pengajuan?id=${i.id}`" class="btn btn-square btn-primary">
-              <i class="fa-solid fa-info"></i>
-            </RouterLink>
-          </div>
-        </div>
+        </RouterLink>
       </div>
     </div>
-    <div v-else class="flex flex-col gap-2">
-      <p class="text-center">{{ isLoading ? 'Loading...' : 'Tidak ada pengajuan' }}</p>
+    <div v-else class="flex flex-col gap-2 text-sm font-semibold text-center">
+      <p>{{ isLoading ? 'Loading...' : 'Tidak ada pengajuan' }}</p>
     </div>
 
   </div>

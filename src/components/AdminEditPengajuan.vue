@@ -4,7 +4,7 @@ import { onMounted, ref } from 'vue';
 import { getCookies } from '../utils/cookies';
 import { Pengajuan } from '../models/Pengajuan';
 import { Dokumen } from '../models/Dokumen';
-import { KotakMasuk } from '../models/KotakMasuk';
+import { Aktivitas } from '../models/Aktivitas';
 import type { IPengajuan, IPengguna } from '../models/types';
 import Navbar from '../components/Navbar.vue';
 import Required from '../components/Required.vue';
@@ -13,8 +13,8 @@ const router = useRouter()
 const currRoute = router.currentRoute
 const pengajuanModel = Pengajuan.getInstance()
 const dokumenModel = Dokumen.getInstance()
-const kotakMasukModel = KotakMasuk.getInstance()
-const currUser = getCookies<IPengguna>('sessionId')
+const aktivitasModel = Aktivitas.getInstance()
+let currUser = getCookies<IPengguna | undefined>('sessionId') ?? undefined
 
 const forms = ref<IPengajuan>({
   nama: '',
@@ -33,8 +33,9 @@ async function ubahPengajuan() {
       status: forms.value.status,
       selesai: forms.value.status === 'Selesai' ? new Date().toISOString() : null
     })
-    await kotakMasukModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) mengedit pengajuan ini.`, true)
-    router.push('/admin-pengajuan')
+    await aktivitasModel.insert(currUser?.id!, currRoute.value.query.id as string, `${currUser?.nama} (${currUser?.peran}) mengedit pengajuan ini.`, true)
+    alert('Pengajuan berhasil diubah!')
+    router.push('/?view=admin-pengajuan')
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -43,14 +44,15 @@ async function ubahPengajuan() {
 }
 
 async function hapusPengajuan() {
-  const conf = confirm('Apakah Anda ingin menghapus pengajuan ini?')
+  const conf = confirm('Apakah Anda ingin menghapus pengajuan ini dan semua dokumennya?')
   if (!conf) return
   try {
     isLoading.value = true
-    await kotakMasukModel.insert(currUser.id!, null, `${currUser?.nama} (${currUser.peran}) dari ${forms.value.tim} menghapus ${forms.value.nama}.`, false)
+    await aktivitasModel.insert(currUser?.id!, null, `${currUser?.nama} (${currUser?.peran}) menghapus ${forms.value.nama}.`, false)
     await dokumenModel.deleteFiles(currRoute.value.query.id as string)
     await pengajuanModel.deleteById(currRoute.value.query.id as string)
-    router.push('/admin-pengajuan')
+    alert('Pengajuan berhasil dihapus!')
+    router.push('/?view=admin-pengajuan')
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -78,7 +80,15 @@ async function getData() {
 }
 
 onMounted(() => {
-  if (currUser.peran !== 'Admin') return router.go(-1)
+  currUser = getCookies<IPengguna | undefined>('sessionId') ?? undefined
+  if (!currUser) {
+    router.replace('/?view=login')
+    return
+  }
+  if (currUser && currUser.peran !== 'Admin') {
+    router.go(-1)
+    return
+  }
   getData()
 })
 </script>
@@ -86,14 +96,18 @@ onMounted(() => {
 <template>
   <Navbar />
   <main class="flex flex-col w-full max-w-5xl gap-4 p-8 mx-auto">
-    <div class="flex items-center justify-between">
-      <p class="text-xl font-semibold">Edit Pengajuan</p>
-      <button @click="() => router.go(-1)" class="underline cursor-pointer text-primary">
-        &lt; Kembali
-      </button>
+
+    <div class="flex flex-col gap-2">
+      <div class="flex justify-between gap-1">
+        <p class="text-lg font-semibold">Edit Pengajuan</p>
+        <button @click="() => router.go(-1)" class="link link-primary">
+          &lt; Kembali
+        </button>
+      </div>
     </div>
-    <form @submit.prevent="ubahPengajuan" class="flex flex-col gap-2" id="form">
-      <fieldset class="fieldset">
+
+    <form @submit.prevent="ubahPengajuan" class="grid grid-cols-2 gap-2 max-sm:grid-cols-1" id="form">
+      <fieldset class="col-span-2 max-sm:col-span-1 fieldset">
         <legend class="fieldset-legend">Nama
           <Required />
         </legend>
@@ -130,6 +144,7 @@ onMounted(() => {
         </div>
       </fieldset>
     </form>
+
     <div class="flex flex-col gap-2">
       <button type="submit" class="w-full btn btn-primary" form="form" :disabled="isLoading">
         <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
@@ -138,5 +153,6 @@ onMounted(() => {
         <i class="fa-solid fa-trash"></i> Hapus Pengajuan
       </button>
     </div>
+
   </main>
 </template>

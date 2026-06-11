@@ -3,7 +3,7 @@ import { useRouter } from 'vue-router';
 import { onMounted, ref } from 'vue';
 import { getCookies } from '../utils/cookies';
 import { Dokumen } from '../models/Dokumen';
-import { KotakMasuk } from '../models/KotakMasuk';
+import { Aktivitas } from '../models/Aktivitas';
 import type { IDokumen, IPengguna } from '../models/types';
 import Navbar from '../components/Navbar.vue';
 import Required from '../components/Required.vue';
@@ -11,8 +11,8 @@ import Required from '../components/Required.vue';
 const router = useRouter()
 const currRoute = router.currentRoute
 const dokumenModel = Dokumen.getInstance()
-const kotakMasukModel = KotakMasuk.getInstance()
-const currUser = getCookies<IPengguna>('sessionId')
+const aktivitasModel = Aktivitas.getInstance()
+let currUser = getCookies<IPengguna | undefined>('sessionId') ?? undefined
 
 const forms = ref<IDokumen>({
   nama: '',
@@ -26,9 +26,10 @@ const isLoading = ref<boolean>(false)
 async function ubahDokumen() {
   try {
     isLoading.value = true
-    await kotakMasukModel.insert(currUser.id!, forms.value.pengajuan?.id!, `${currUser.nama} (${currUser.peran}) mengedit dokumen ${forms.value.nama}.`, true)
-    await dokumenModel.updateById(currRoute.value.query.id as string, { status: forms.value.status })
-    router.push('/admin-dokumen')
+    await aktivitasModel.insert(currUser?.id!, forms.value.pengajuan?.id!, `${currUser?.nama} (${currUser?.peran}) mengedit status dokumen ${forms.value.nama} menjadi ${forms.value.status}.`, true)
+    await dokumenModel.updateById(currRoute.value.query.id as string, { status: forms.value.status, selesai: forms.value.status === 'Valid' ? new Date().toISOString() : null })
+    alert('Dokumen berhasil diubah!')
+    router.push('/?view=admin-dokumen')
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -41,9 +42,10 @@ async function hapusDokumen() {
   if (!conf) return
   try {
     isLoading.value = true
-    await kotakMasukModel.insert(currUser.id!, forms.value.pengajuan?.id!, `${currUser.nama} (${currUser.peran}) menghapus dokumen ${forms.value.nama}.`, true)
+    await aktivitasModel.insert(currUser?.id!, forms.value.pengajuan?.id!, `${currUser?.nama} (${currUser?.peran}) menghapus dokumen ${forms.value.nama}.`, true)
     await dokumenModel.deleteByPengajuan(forms.value.pengajuan?.id!, forms.value.tipe!)
-    router.push('/admin-dokumen')
+    alert('Dokumen berhasil dihapus!')
+    router.push('/?view=admin-dokumen')
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -71,7 +73,15 @@ async function getData() {
 }
 
 onMounted(() => {
-  if (currUser.peran !== 'Admin') return router.go(-1)
+  currUser = getCookies<IPengguna | undefined>('sessionId') ?? undefined
+  if (!currUser) {
+    router.replace('/?view=login')
+    return
+  }
+  if (currUser && currUser.peran !== 'Admin') {
+    router.go(-1)
+    return
+  }
   getData()
 })
 </script>
@@ -79,12 +89,16 @@ onMounted(() => {
 <template>
   <Navbar />
   <main class="flex flex-col w-full max-w-5xl gap-4 p-8 mx-auto">
-    <div class="flex items-center justify-between">
-      <p class="text-xl font-semibold">Edit Dokumen</p>
-      <button @click="() => router.go(-1)" class="underline cursor-pointer text-primary">
-        &lt; Kembali
-      </button>
+
+    <div class="flex flex-col gap-2">
+      <div class="flex justify-between gap-1">
+        <p class="text-lg font-semibold">Edit Dokumen</p>
+        <button @click="() => router.go(-1)" class="link link-primary">
+          &lt; Kembali
+        </button>
+      </div>
     </div>
+
     <form @submit.prevent="ubahDokumen" class="flex flex-col gap-2" id="form">
       <fieldset class="fieldset">
         <legend class="fieldset-legend">Status Dokumen
@@ -104,6 +118,7 @@ onMounted(() => {
         </div>
       </fieldset>
     </form>
+
     <div class="flex flex-col gap-2">
       <button type="submit" class="w-full btn btn-primary" form="form" :disabled="isLoading">
         <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
@@ -111,6 +126,11 @@ onMounted(() => {
       <button @click="hapusDokumen" class="w-full btn btn-error" :disabled="isLoading">
         <i class="fa-solid fa-trash"></i> Hapus Dokumen
       </button>
+      <a :href="`https://jzybgguiugsdfdgfyczr.supabase.co/storage/v1/object/public/dokumen/${currRoute.query.id}`"
+        target="_blank" class="w-full btn">
+        <i class="fa-solid fa-download"></i> Download Dokumen
+      </a>
     </div>
+
   </main>
 </template>

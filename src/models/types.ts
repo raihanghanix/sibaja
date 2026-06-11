@@ -14,7 +14,6 @@ export interface IPengajuan {
   pesanan?: boolean;
   status?: string;
   tim?: string;
-  disetujui?: boolean;
   selesai?: string | null;
   pbj?: IPengguna;
 }
@@ -28,7 +27,7 @@ export interface IDokumen {
   tipe?: TDokumen;
   selesai?: string | null;
 }
-export interface IKotakMasuk {
+export interface IAktivitas {
   id?: string;
   created_at?: string;
   pengguna?: IPengguna;
@@ -84,11 +83,4 @@ export const teams = [
   "Tim Keuangan",
 ];
 
-export const roles: TPeran[] = [
-  "Admin",
-  "PJ",
-  "Ketua Tim",
-  "PPK",
-  "PBJ",
-  "Bendahara",
-];
+export const roles: TPeran[] = ["Admin", "PJ", "PPK", "PBJ", "Bendahara"];

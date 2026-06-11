@@ -9,7 +9,7 @@ import Required from '../components/Required.vue';
 
 const router = useRouter()
 const currRoute = router.currentRoute
-const currUser = getCookies<IPengguna>('sessionId')
+let currUser = getCookies<IPengguna | undefined>('sessionId') ?? undefined
 const penggunaModel = Pengguna.getInstance()
 
 const forms = ref<IPengguna>({
@@ -26,7 +26,8 @@ async function ubahProfil() {
   try {
     isLoading.value = true
     await penggunaModel.updateById(currRoute.value.query.id as string, forms.value)
-    router.push('/admin-pengguna')
+    alert('Akun berhasil diubah!')
+    router.push('/?view=admin-pengguna')
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -40,7 +41,8 @@ async function hapusAkun() {
   try {
     isLoading.value = true
     await penggunaModel.deleteById(currRoute.value.query.id as string)
-    router.push('/admin-pengguna')
+    alert('Akun berhasil dihapus!')
+    router.push('/?view=admin-pengguna')
   } catch (err) {
     if (err instanceof Error) alert(err.message)
   } finally {
@@ -68,57 +70,68 @@ async function getData() {
 }
 
 onMounted(() => {
-  if (currUser.peran !== 'Admin') return router.go(-1)
+  currUser = getCookies<IPengguna | undefined>('sessionId') ?? undefined
+  if (!currUser) {
+    router.replace('/?view=login')
+    return
+  }
+  if (currUser && currUser.peran !== 'Admin') {
+    router.go(-1)
+    return
+  }
   getData()
 })
 </script>
 
 <template>
   <Navbar />
-  <div class="flex flex-col gap-4 p-8">
+  <div class="flex flex-col w-full max-w-5xl gap-4 p-8 mx-auto">
 
     <div class="flex flex-col gap-2">
       <div class="flex justify-between gap-1">
         <p class="text-lg font-semibold">Edit Pengguna</p>
-        <button @click="() => router.go(-1)" class="underline cursor-pointer text-primary">
+        <button @click="() => router.go(-1)" class="link link-primary">
           &lt; Kembali
         </button>
       </div>
     </div>
 
-    <form @submit.prevent="ubahProfil" class="flex flex-col gap-2" id="form">
+    <form @submit.prevent="ubahProfil" class="grid grid-cols-2 gap-2 max-sm:grid-cols-1" id="form">
       <fieldset class="fieldset">
         <legend class="fieldset-legend">NIP
           <Required />
         </legend>
-        <input v-model="forms.id" type="text" class="w-full input" placeholder="NIP Anda..." name="nip" required />
+        <input v-model="forms.id" type="text" class="w-full input" placeholder="NIP Anda..." name="nip"
+          :disabled="currUser?.id === currRoute.query.id" required />
       </fieldset>
       <fieldset class="fieldset">
         <legend class="fieldset-legend">Nama
           <Required />
         </legend>
-        <input v-model="forms.nama" type="text" class="w-full input" placeholder="Nama Anda..." name="nama" required />
+        <input v-model="forms.nama" type="text" class="w-full input" placeholder="Nama Anda..." name="nama"
+          :disabled="currUser?.id === currRoute.query.id" required />
       </fieldset>
       <fieldset class="fieldset">
         <legend class="fieldset-legend">Email
           <Required />
         </legend>
         <input v-model="forms.email" type="email" class="w-full input" placeholder="Email Anda..." name="email"
-          required />
+          :disabled="currUser?.id === currRoute.query.id" required />
       </fieldset>
       <fieldset class="fieldset">
         <legend class="fieldset-legend">Password
           <Required />
         </legend>
         <input v-model="forms.password" type="text" class="w-full input" placeholder="Password Anda..." name="password"
-          required />
+          :disabled="currUser?.id === currRoute.query.id" required />
       </fieldset>
       <fieldset class="fieldset">
         <legend class="fieldset-legend">Peran
           <Required />
         </legend>
         <div v-for="role in roles" class="flex items-center gap-2 truncate">
-          <input v-model="forms.peran" type="radio" class="radio" name="peran" :value="role" required />
+          <input v-model="forms.peran" type="radio" class="radio" name="peran" :value="role"
+            :disabled="currUser?.id === currRoute.query.id" required />
           <p class="truncate">{{ role }}</p>
         </div>
       </fieldset>
@@ -127,17 +140,20 @@ onMounted(() => {
           <Required />
         </legend>
         <div v-for="team in teams" class="flex items-center gap-2 truncate">
-          <input v-model="forms.tim" type="checkbox" class="checkbox" name="tim" :id="team" :value="team" />
+          <input v-model="forms.tim![0]" type="radio" class="radio" name="tim" :value="team" required
+            :disabled="currUser?.id === currRoute.query.id" />
           <p class="truncate">{{ team }}</p>
         </div>
       </fieldset>
     </form>
 
     <div class="flex flex-col gap-2">
-      <button type="submit" class="w-full btn btn-primary" form="form" :disabled="isLoading">
+      <button type="submit" class="w-full btn btn-primary" form="form"
+        :disabled="isLoading || currUser?.id === currRoute.query.id">
         <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
       </button>
-      <button @click="hapusAkun" class="w-full btn btn-error" :disabled="isLoading">
+      <button @click="hapusAkun" class="w-full btn btn-error"
+        :disabled="isLoading || currUser?.id === currRoute.query.id">
         <i class="fa-solid fa-trash"></i> Hapus Akun
       </button>
     </div>

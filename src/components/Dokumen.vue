@@ -3,7 +3,7 @@ import { useRouter } from 'vue-router';
 import { ref } from 'vue';
 import { getCookies } from '../utils/cookies';
 import { Dokumen } from '../models/Dokumen';
-import { KotakMasuk } from '../models/KotakMasuk';
+import { Aktivitas } from '../models/Aktivitas';
 import type { IDokumen, IPengguna, TDokumen } from '../models/types';
 
 const props = defineProps<{ title: string, data: IDokumen | null, uploader: string, validator: string, tipe: TDokumen, idPbj?: string }>()
@@ -13,7 +13,7 @@ const currRoute = router.currentRoute
 const currUser = getCookies<IPengguna>('sessionId')
 
 const dokumenModel = Dokumen.getInstance()
-const kotakMasukModel = KotakMasuk.getInstance()
+const aktivitasModel = Aktivitas.getInstance()
 
 const dokumen = ref<IDokumen | null>(props.data)
 const isLoading = ref<boolean>(false)
@@ -31,7 +31,7 @@ async function terimaDokumen() {
   try {
     isLoading.value = true
     await dokumenModel.updateById(dokumen.value.id!, { status: 'Valid', selesai: new Date().toISOString() })
-    await kotakMasukModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) menerima dokumen ${props.title}.`, true)
+    await aktivitasModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) menerima dokumen ${props.title}.`, true)
     await getData()
   } catch (err) {
     if (err instanceof Error) alert(err.message)
@@ -42,12 +42,13 @@ async function terimaDokumen() {
 
 async function tolakDokumen() {
   if (!dokumen.value?.status) return
-  const input = prompt('Apa alasan Anda menolak dokumen ini?')
-  const alasan = input ? input : 'Tidak ada alasan'
+  const input = prompt('Apa alasan Anda menolak dokumen ini? (Wajib)')
+  const alasan = input
+  if (!alasan || !alasan.length) return
   try {
     isLoading.value = true
     await dokumenModel.updateById(dokumen.value.id!, { status: 'Tidak valid', selesai: null })
-    await kotakMasukModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) menolak dokumen ${props.title} dengan alasan: "${alasan}".`, true)
+    await aktivitasModel.insert(currUser.id!, currRoute.value.query.id as string, `${currUser.nama} (${currUser.peran}) menolak dokumen ${props.title} dengan alasan: "${alasan}".`, true)
     await getData()
   } catch (err) {
     if (err instanceof Error) alert(err.message)
@@ -99,7 +100,7 @@ async function getData() {
       </div>
       <div v-if="dokumen?.status" class="justify-end card-actions">
         <RouterLink v-if="currUser.id === dokumen.pengguna?.id && currUser.peran === props.uploader"
-          :to="`/tambah-dokumen?id=${currRoute.query.id}&tipe=${dokumen.tipe}&validator=${props.validator}`"
+          :to="`/?view=tambah-dokumen&id=${currRoute.query.id}&tipe=${dokumen.tipe}&validator=${props.validator}`"
           class="btn btn-square btn-primary">
           <i class="fa-solid fa-pencil"></i>
         </RouterLink>
@@ -130,12 +131,12 @@ async function getData() {
       </div>
       <div v-else class="justify-end card-actions">
         <RouterLink v-if="props.uploader === 'PBJ' && currUser.id === props.idPbj"
-          :to="`/tambah-dokumen?id=${currRoute.query.id}&tipe=${props.tipe}&validator=${props.validator}`"
+          :to="`/?view=tambah-dokumen&id=${currRoute.query.id}&tipe=${props.tipe}&validator=${props.validator}`"
           class="btn btn-square btn-primary">
           <i class="fa-solid fa-plus"></i>
         </RouterLink>
         <RouterLink v-if="props.uploader !== 'PBJ' && currUser.peran === props.uploader"
-          :to="`/tambah-dokumen?id=${currRoute.query.id}&tipe=${props.tipe}&validator=${props.validator}`"
+          :to="`/?view=tambah-dokumen&id=${currRoute.query.id}&tipe=${props.tipe}&validator=${props.validator}`"
           class="btn btn-square btn-primary">
           <i class="fa-solid fa-plus"></i>
         </RouterLink>
