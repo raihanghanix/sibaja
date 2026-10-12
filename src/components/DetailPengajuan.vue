@@ -136,6 +136,8 @@ async function selesaikanPesanan() {
     isLoading.value = true
     await pengajuanModel.updateById(currRoute.value.query.id as string, { pesanan: true })
     await aktivitasModel.insert(currUser?.id!, currRoute.value.query.id as string, `${currUser?.nama} (${currUser?.peran}) mengubah status pesanan pada pengajuan ini menjadi Selesai.`, true)
+    await pengajuanModel.updateById(currRoute.value.query.id as string, { tahap: 9 })
+    pengajuan.value.tahap = 9
     alert('Pesanan berhasil diselesaikan!')
     await getData()
   } catch (err) {
@@ -178,8 +180,8 @@ onMounted(() => {
     <div class="flex flex-col gap-2">
       <div class="flex justify-between gap-1">
         <p class="text-lg font-semibold">{{ pengajuan?.nama ?? '...' }}</p>
-        <button @click="() => router.go(-1)" class="link link-primary">
-          &lt; Kembali
+        <button @click="() => router.go(-1)" class="link bg-base-200 px-2 rounded-sm">
+          <i class="fa-solid fa-chevron-left"></i> Kembali
         </button>
       </div>
     </div>
@@ -199,15 +201,54 @@ onMounted(() => {
       </RouterLink>
     </div>
 
+    <div class="card bg-primary text-primary-content w-full card-sm">
+      <div class="card-body">
+        <h2 class="card-title"><i class="fa-solid fa-info-circle"></i> Tahap {{ pengajuan.tahap }}</h2>
+        <p v-if="pengajuan.tahap === 1">PJ mengunggah Kerangka Acuan Kerja, Form Permintaan, dan Surat Permintaan
+          ke PPK
+        </p>
+        <p v-if="pengajuan.tahap === 2">PPK memvalidasi Kerangka Acuan Kerja, Form Permintaan, dan Surat
+          Permintaan ke
+          PPK
+        </p>
+        <p v-if="pengajuan.tahap === 3">PPK mengunggah Dokumen Rancangan Kontrak, Spekteknis, Harga Perkiraan
+          Sendiri,
+          dan Surat Penunjukan Pejabat Pengadaan</p>
+        <p v-if="pengajuan.tahap === 4">PBJ memvalidasi Dokumen Rancangan Kontrak, Spekteknis, Harga Perkiraan
+          Sendiri,
+          dan Surat Penunjukan Pejabat Pengadaan</p>
+        <p v-if="pengajuan.tahap === 5">PBJ mengunggah Berita Acara Negosiasi, Berita Acara Berhasil Pemilihan</p>
+        <p v-if="pengajuan.tahap === 6">PPK memvalidasi Berita Acara Negosiasi, Berita Acara Berhasil Pemilihan
+        </p>
+        <p v-if="pengajuan.tahap === 7">PPK mengunggah Surat Penetapan Pemenang Barang dan Jasa, Surat
+          Kontrak/Pesanan
+        </p>
+        <p v-if="pengajuan.tahap === 8">PBJ menyelesaikan pesanan pada pengajuan ini</p>
+        <p v-if="pengajuan.tahap === 9">PPK mengunggah Berita Acara Serah Terima Pekerjaan, Berita Acara
+          Pembayaran
+        </p>
+        <p v-if="pengajuan.tahap === 10">Bendahara mengunggah Surat Perintah Pembayaran dan mencairkan dana
+        </p>
+        <p v-if="pengajuan.tahap === 11">PPK memvalidasi Surat Perintah Pembayaran
+        </p>
+        <p v-if="pengajuan.tahap === 12">PPK mengunggah Kuitansi dan Surat Pesanan
+        </p>
+        <p v-if="pengajuan.tahap === 13">PPK menyelesaikan pengajuan ini</p>
+      </div>
+    </div>
+
     <div class="divider">Detail Pengajuan</div>
 
     <div class="flex flex-col gap-4">
       <div class="flex flex-col gap-2">
         <p class="font-semibold">Status Pengajuan</p>
         <div v-if="isLoading" class="badge badge-soft">...</div>
-        <div v-else-if="pengajuan.status === 'Diproses'" class="badge badge-soft badge-info">Diproses</div>
-        <div v-else-if="pengajuan.status === 'Selesai'" class="badge badge-soft badge-success">Selesai</div>
-        <div v-else-if="pengajuan.status === 'Ditolak'" class="badge badge-soft badge-error">Ditolak</div>
+        <div v-else-if="pengajuan.status === 'Diproses'" class="badge badge-soft badge-info">Diproses, Tahap {{
+          pengajuan.tahap }}</div>
+        <div v-else-if="pengajuan.status === 'Selesai'" class="badge badge-soft badge-success">Selesai, Tahap {{
+          pengajuan.tahap }}</div>
+        <div v-else-if="pengajuan.status === 'Ditolak'" class="badge badge-soft badge-error">Ditolak, Tahap {{
+          pengajuan.tahap }}</div>
         <p class="text-sm">
           <i class="fa-solid fa-calendar"></i> Diajukan: {{
             pengajuan.created_at ? `${formatDate(pengajuan.created_at)} (${formatTime(pengajuan.created_at)})` : '-'

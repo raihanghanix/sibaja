@@ -14,6 +14,8 @@ const pengajuanModel = Pengajuan.getInstance()
 
 const filter = ref<string>(currRoute.value.query.filter as string ?? 'Diproses')
 const sort = ref<string>(currRoute.value.query.sort as string ?? 'desc')
+const year = ref<string>(currRoute.value.query.year as string ?? new Date().getFullYear().toString())
+const years = ref<string[]>([])
 const daftarPengajuan = ref<IPengajuan[]>([])
 const jumlahDiproses = ref<number>(0)
 const jumlahSelesai = ref<number>(0)
@@ -34,19 +36,26 @@ function reset() {
   jumlahDitolak.value = 0
   daftarPengajuan.value = []
   filter.value = currRoute.value.query.filter as string ?? 'Diproses'
+  year.value = currRoute.value.query.year as string ?? new Date().getFullYear().toString()
   sort.value = currRoute.value.query.sort as string ?? 'desc'
 }
 
 function handleFilter(e: Event) {
   const target = e.target as HTMLSelectElement
   filter.value = target.value
-  router.push(`/?view=beranda&filter=${filter.value}&sort=${sort.value}`)
+  router.push(`/?view=beranda&filter=${filter.value}&year=${year.value}&sort=${sort.value}`)
+}
+
+function handleYear(e: Event) {
+  const target = e.target as HTMLSelectElement
+  year.value = target.value
+  router.push(`/?view=beranda&filter=${filter.value}&year=${year.value}&sort=${sort.value}`)
 }
 
 function handleSort(e: Event) {
   const target = e.target as HTMLSelectElement
   sort.value = target.value
-  router.push(`/?view=beranda&filter=${filter.value}&sort=${sort.value}`)
+  router.push(`/?view=beranda&filter=${filter.value}&year=${year.value}&sort=${sort.value}`)
 }
 
 async function getData() {
@@ -55,16 +64,20 @@ async function getData() {
     reset()
     if (currUser?.peran === 'PJ') {
       const data = await pengajuanModel.getByTim(currUser?.tim!, sort.value)
-      jumlahDiproses.value = data.filter((i) => i.status === 'Diproses').length
-      jumlahSelesai.value = data.filter((i) => i.status === 'Selesai').length
-      jumlahDitolak.value = data.filter((i) => i.status === 'Ditolak').length
-      daftarPengajuan.value = data.filter((i) => i.status === filter.value)
+      const filtered = data.filter((i) => i.created_at?.includes(`${year.value}-`))
+      years.value = [...new Set([new Date().getFullYear().toString(), ...data.map((i) => i.created_at?.slice(0, 4)!)])]
+      jumlahDiproses.value = filtered.filter((i) => i.status === 'Diproses').length
+      jumlahSelesai.value = filtered.filter((i) => i.status === 'Selesai').length
+      jumlahDitolak.value = filtered.filter((i) => i.status === 'Ditolak').length
+      daftarPengajuan.value = filtered.filter((i) => i.status === filter.value)
     } else {
       const data = await pengajuanModel.getAll(sort.value)
-      jumlahDiproses.value = data.filter((i) => i.status === 'Diproses').length
-      jumlahSelesai.value = data.filter((i) => i.status === 'Selesai').length
-      jumlahDitolak.value = data.filter((i) => i.status === 'Ditolak').length
-      daftarPengajuan.value = data.filter((i) => i.status === filter.value)
+      const filtered = data.filter((i) => i.created_at?.includes(`${year.value}-`))
+      years.value = [...new Set([new Date().getFullYear().toString(), ...data.map((i) => i.created_at?.slice(0, 4)!)])]
+      jumlahDiproses.value = filtered.filter((i) => i.status === 'Diproses').length
+      jumlahSelesai.value = filtered.filter((i) => i.status === 'Selesai').length
+      jumlahDitolak.value = filtered.filter((i) => i.status === 'Ditolak').length
+      daftarPengajuan.value = filtered.filter((i) => i.status === filter.value)
     }
   } catch (err) {
     if (err instanceof Error) alert(err.message)
@@ -109,6 +122,12 @@ watch(currRoute, () => {
         </select>
       </fieldset>
       <fieldset class="fieldset">
+        <legend class="fieldset-legend">Tahun</legend>
+        <select v-model="year" @change="handleYear" class="w-full select">
+          <option v-for="y in years" :value="y">{{ y }}</option>
+        </select>
+      </fieldset>
+      <fieldset class="fieldset">
         <legend class="fieldset-legend">Urutkan</legend>
         <select v-model="sort" @change="handleSort" class="w-full select">
           <option value="asc">Terlama (Z-A)</option>
@@ -134,9 +153,9 @@ watch(currRoute, () => {
         <RouterLink :to="`/?view=detail-pengajuan&id=${i.id}`" class="card-body hover:bg-base-200">
           <div class="flex justify-between gap-1 truncate">
             <h2 class="text-base truncate card-title">{{ i.nama }}</h2>
-            <div v-if="i.status === 'Diproses'" class="badge badge-soft badge-info">Diproses</div>
-            <div v-if="i.status === 'Selesai'" class="badge badge-soft badge-success">Selesai</div>
-            <div v-if="i.status === 'Ditolak'" class="badge badge-soft badge-error">Ditolak</div>
+            <div v-if="i.status === 'Diproses'" class="badge badge-soft badge-info">Diproses, Tahap {{ i.tahap }}</div>
+            <div v-if="i.status === 'Selesai'" class="badge badge-soft badge-success">Selesai, Tahap {{ i.tahap }}</div>
+            <div v-if="i.status === 'Ditolak'" class="badge badge-soft badge-error">Ditolak, Tahap {{ i.tahap }}</div>
           </div>
           <div class="flex flex-col gap-1 text-sm truncate">
             <p><i class="truncate fa-solid fa-users"></i> {{ i.tim }}</p>

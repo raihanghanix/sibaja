@@ -20,7 +20,8 @@ const forms = ref<IPengajuan>({
   nama: '',
   pesanan: false,
   status: 'Diproses',
-  selesai: null
+  selesai: null,
+  tahap: 1
 })
 const isLoading = ref<boolean>(false)
 
@@ -31,7 +32,8 @@ async function ubahPengajuan() {
       nama: forms.value.nama,
       pesanan: forms.value.pesanan,
       status: forms.value.status,
-      selesai: forms.value.status === 'Selesai' ? new Date().toISOString() : null
+      selesai: forms.value.status === 'Selesai' ? new Date().toISOString() : null,
+      tahap: Number(forms.value.tahap)
     })
     await aktivitasModel.insert(currUser?.id!, currRoute.value.query.id as string, `${currUser?.nama} (${currUser?.peran}) mengedit pengajuan ini.`, true)
     alert('Pengajuan berhasil diubah!')
@@ -100,8 +102,8 @@ onMounted(() => {
     <div class="flex flex-col gap-2">
       <div class="flex justify-between gap-1">
         <p class="text-lg font-semibold">Edit Pengajuan</p>
-        <button @click="() => router.go(-1)" class="link link-primary">
-          &lt; Kembali
+        <button @click="() => router.go(-1)" class="link bg-base-200 px-2 rounded-sm">
+          <i class="fa-solid fa-chevron-left"></i> Kembali
         </button>
       </div>
     </div>
@@ -112,6 +114,12 @@ onMounted(() => {
           <Required />
         </legend>
         <input v-model="forms.nama" type="text" class="w-full input" placeholder="Nama..." name="nama" required />
+      </fieldset>
+      <fieldset class="col-span-2 max-sm:col-span-1 fieldset">
+        <legend class="fieldset-legend">Tahap
+          <Required />
+        </legend>
+        <input v-model="forms.tahap" type="number" class="w-full input" placeholder="Tahap..." name="tahap" required />
       </fieldset>
       <fieldset class="fieldset">
         <legend class="fieldset-legend">Status Pengajuan

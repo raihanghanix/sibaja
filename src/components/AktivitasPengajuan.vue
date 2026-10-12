@@ -85,8 +85,8 @@ watch(currRoute, () => {
     <div class="flex flex-col gap-2">
       <div class="flex justify-between gap-1">
         <p class="text-lg font-semibold">{{ detailPengajuan?.nama ?? '...' }}</p>
-        <button @click="() => router.go(-1)" class="link link-primary">
-          &lt; Kembali
+        <button @click="() => router.go(-1)" class="link bg-base-200 px-2 rounded-sm">
+          <i class="fa-solid fa-chevron-left"></i> Kembali
         </button>
       </div>
     </div>
@@ -104,6 +104,42 @@ watch(currRoute, () => {
         :class="`btn btn-xs ${currRoute.query.view === 'aktivitas-pengajuan' && 'btn-secondary'}`">
         Aktivitas Pengajuan
       </RouterLink>
+    </div>
+
+    <div class="card bg-primary text-primary-content w-full card-sm">
+      <div class="card-body">
+        <h2 class="card-title"><i class="fa-solid fa-info-circle"></i> Tahap {{ detailPengajuan.tahap }}</h2>
+        <p v-if="detailPengajuan.tahap === 1">PJ mengunggah Kerangka Acuan Kerja, Form Permintaan, dan Surat Permintaan
+          ke PPK
+        </p>
+        <p v-if="detailPengajuan.tahap === 2">PPK memvalidasi Kerangka Acuan Kerja, Form Permintaan, dan Surat
+          Permintaan ke
+          PPK
+        </p>
+        <p v-if="detailPengajuan.tahap === 3">PPK mengunggah Dokumen Rancangan Kontrak, Spekteknis, Harga Perkiraan
+          Sendiri,
+          dan Surat Penunjukan Pejabat Pengadaan</p>
+        <p v-if="detailPengajuan.tahap === 4">PBJ memvalidasi Dokumen Rancangan Kontrak, Spekteknis, Harga Perkiraan
+          Sendiri,
+          dan Surat Penunjukan Pejabat Pengadaan</p>
+        <p v-if="detailPengajuan.tahap === 5">PBJ mengunggah Berita Acara Negosiasi, Berita Acara Berhasil Pemilihan</p>
+        <p v-if="detailPengajuan.tahap === 6">PPK memvalidasi Berita Acara Negosiasi, Berita Acara Berhasil Pemilihan
+        </p>
+        <p v-if="detailPengajuan.tahap === 7">PPK mengunggah Surat Penetapan Pemenang Barang dan Jasa, Surat
+          Kontrak/Pesanan
+        </p>
+        <p v-if="detailPengajuan.tahap === 8">PBJ menyelesaikan pesanan pada pengajuan ini</p>
+        <p v-if="detailPengajuan.tahap === 9">PPK mengunggah Berita Acara Serah Terima Pekerjaan, Berita Acara
+          Pembayaran
+        </p>
+        <p v-if="detailPengajuan.tahap === 10">Bendahara mengunggah Surat Perintah Pembayaran dan mencairkan dana
+        </p>
+        <p v-if="detailPengajuan.tahap === 11">PPK memvalidasi Surat Perintah Pembayaran
+        </p>
+        <p v-if="detailPengajuan.tahap === 12">PPK mengunggah Kuitansi dan Surat Pesanan
+        </p>
+        <p v-if="detailPengajuan.tahap === 13">PPK menyelesaikan pengajuan ini</p>
+      </div>
     </div>
 
     <div class="flex gap-2 max-sm:flex-col">

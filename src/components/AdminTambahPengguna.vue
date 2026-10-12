@@ -54,8 +54,8 @@ onMounted(() => {
     <div class="flex flex-col gap-2">
       <div class="flex justify-between gap-1">
         <p class="text-lg font-semibold">Tambah Pengguna</p>
-        <button @click="() => router.go(-1)" class="link link-primary">
-          &lt; Kembali
+        <button @click="() => router.go(-1)" class="link bg-base-200 px-2 rounded-sm">
+          <i class="fa-solid fa-chevron-left"></i> Kembali
         </button>
       </div>
     </div>

@@ -6,7 +6,7 @@ import { Dokumen } from '../models/Dokumen';
 import { Aktivitas } from '../models/Aktivitas';
 import type { IDokumen, IPengguna, TDokumen } from '../models/types';
 
-const props = defineProps<{ title: string, data: IDokumen | null, uploader: string, validator: string, tipe: TDokumen, idPbj?: string }>()
+const props = defineProps<{ title: string, data: IDokumen | null, uploader: string, validator: string, tipe: TDokumen, idPbj?: string, tahap: number, fn?: () => void, selfValid?: boolean }>()
 
 const router = useRouter()
 const currRoute = router.currentRoute
@@ -54,6 +54,7 @@ async function tolakDokumen() {
     if (err instanceof Error) alert(err.message)
   } finally {
     isLoading.value = false
+    if (props.fn) props.fn()
   }
 }
 
@@ -67,6 +68,7 @@ async function getData() {
     if (err instanceof Error) alert(err.message)
   } finally {
     isLoading.value = false
+    if (props.fn) props.fn()
   }
 }
 </script>
@@ -77,9 +79,12 @@ async function getData() {
       <div class="flex justify-between gap-1 truncate">
         <h2 class="text-base truncate card-title">{{ props.title }}</h2>
         <div v-if="!dokumen?.status" class="badge badge-soft">Belum diupload</div>
-        <div v-else-if="dokumen?.status === 'Diproses'" class="badge badge-soft badge-info">Diproses</div>
-        <div v-else-if="dokumen?.status === 'Valid'" class="badge badge-soft badge-success">Valid</div>
-        <div v-else-if="dokumen?.status === 'Tidak valid'" class="badge badge-soft badge-error">Tidak valid</div>
+        <div v-else-if="dokumen?.status === 'Diproses' && !props.selfValid" class="badge badge-soft badge-info">Diproses
+        </div>
+        <div v-else-if="dokumen?.status === 'Valid' && !props.selfValid" class="badge badge-soft badge-success">Valid
+        </div>
+        <div v-else-if="dokumen?.status === 'Tidak valid' && !props.selfValid" class="badge badge-soft badge-error">
+          Tidak valid</div>
       </div>
       <div class="flex flex-col gap-1 text-sm truncate">
         <p><i class="truncate fa-solid fa-key"></i> {{ dokumen?.id ? `${dokumen.id}.pdf` : '-' }}</p>

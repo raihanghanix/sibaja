@@ -131,9 +131,9 @@ watch(currRoute, () => {
         <RouterLink :to="`/?view=admin-edit-pengajuan&id=${i.id}`" class="card-body hover:bg-base-200">
           <div class="flex justify-between gap-1 truncate">
             <h2 class="text-base truncate card-title">{{ i.nama }}</h2>
-            <div v-if="i.status === 'Diproses'" class="badge badge-soft badge-info">Diproses</div>
-            <div v-if="i.status === 'Selesai'" class="badge badge-soft badge-success">Selesai</div>
-            <div v-if="i.status === 'Ditolak'" class="badge badge-soft badge-error">Ditolak</div>
+            <div v-if="i.status === 'Diproses'" class="badge badge-soft badge-info">Diproses, Tahap {{ i.tahap }}</div>
+            <div v-if="i.status === 'Selesai'" class="badge badge-soft badge-success">Selesai, Tahap {{ i.tahap }}</div>
+            <div v-if="i.status === 'Ditolak'" class="badge badge-soft badge-error">Ditolak, Tahap {{ i.tahap }}</div>
           </div>
           <div class="flex flex-col gap-1 text-sm truncate">
             <p><i class="truncate fa-solid fa-users"></i> {{ i.tim }}</p>

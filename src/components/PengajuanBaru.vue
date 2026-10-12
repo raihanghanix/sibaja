@@ -58,8 +58,8 @@ async function tambahPengajuan() {
   try {
     isLoading.value = true
 
-    if (daftarPengajuan.value.find((i) => i.nama?.includes(forms.value.nama as string))) {
-      alert('Nama kegiatan sudah ada pada sistem!')
+    if (daftarPengajuan.value.find((i) => i.nama?.includes(forms.value.nama as string) && i.tim?.includes(forms.value.tim as string))) {
+      alert('Kegiatan sudah ada pada tim Anda!')
       return
     }
 
@@ -165,7 +165,7 @@ onMounted(() => {
           </p>
         </div>
       </fieldset>
-      <fieldset class="fieldset">
+      <fieldset class="col-span-2 max-sm:col-span-1 fieldset">
         <legend class="fieldset-legend">Kerangka Acuan Kerja
           <Required />
         </legend>
@@ -175,6 +175,11 @@ onMounted(() => {
       <fieldset class="fieldset">
         <legend class="fieldset-legend">Form Permintaan</legend>
         <input @change="handleChange" type="file" class="w-full file-input" accept=".pdf" name="fp" />
+        <label class="label">File PDF (Maks. 1MB)</label>
+      </fieldset>
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend">Surat Permintaan ke PPK</legend>
+        <input @change="handleChange" type="file" class="w-full file-input" accept=".pdf" name="spp" />
         <label class="label">File PDF (Maks. 1MB)</label>
       </fieldset>
     </form>

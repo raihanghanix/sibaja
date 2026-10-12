@@ -13,6 +13,7 @@ export class Pengajuan implements IPengajuan {
   tim?: string = "";
   selesai?: string | null = "";
   pbj?: IPengguna = {};
+  tahap?: number = 1;
 
   public get(): IPengajuan {
     return {
@@ -24,6 +25,7 @@ export class Pengajuan implements IPengajuan {
       tim: this.tim,
       selesai: this.selesai,
       pbj: this.pbj,
+      tahap: this.tahap,
     };
   }
 
@@ -36,6 +38,7 @@ export class Pengajuan implements IPengajuan {
     this.tim = val.tim;
     this.selesai = val.selesai;
     this.pbj = val.pbj;
+    this.tahap = val.tahap;
   }
 
   public async getAll(sort: string) {

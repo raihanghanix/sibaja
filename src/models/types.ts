@@ -16,6 +16,7 @@ export interface IPengajuan {
   tim?: string;
   selesai?: string | null;
   pbj?: IPengguna;
+  tahap?: number;
 }
 export interface IDokumen {
   id?: string;
